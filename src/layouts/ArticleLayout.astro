@@ -1,0 +1,112 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  date: Date;
+  categories: string[];
+  tags: string[];
+  meta_description: string;
+  read_time_minutes: number;
+  featured_image?: string;
+  featured_image_caption?: string;
+}
+
+const { 
+  title, 
+  date, 
+  categories, 
+  tags, 
+  meta_description, 
+  read_time_minutes,
+  featured_image,
+  featured_image_caption
+} = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<BaseLayout title={title} description={meta_description}>
+  <article class="max-w-3xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <div class="flex flex-wrap gap-2 mb-4">
+        {categories.map(category => (
+          <a 
+            href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+            class="text-xs font-mono uppercase tracking-wide text-vnn-blue no-underline hover:underline"
+          >
+            {category}
+          </a>
+        ))}
+      </div>
+      
+      <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight text-vnn-charcoal">
+        {title}
+      </h1>
+      
+      <div class="flex flex-wrap items-center gap-4 text-sm text-vnn-gray font-mono">
+        <span class="font-medium text-vnn-charcoal">Valyrian News Network</span>
+        <span>·</span>
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+        <span>·</span>
+        <span>{read_time_minutes} min read</span>
+      </div>
+    </header>
+    
+    {featured_image && (
+      <figure class="mb-8">
+        <img 
+          src={featured_image} 
+          alt={featured_image_caption || title}
+          class="w-full rounded-lg"
+        />
+        {featured_image_caption && (
+          <figcaption class="text-sm text-vnn-gray mt-2 text-center">
+            {featured_image_caption}
+          </figcaption>
+        )}
+      </figure>
+    )}
+    
+    <div class="prose prose-lg max-w-none
+      prose-headings:font-serif prose-headings:text-vnn-charcoal
+      prose-p:text-vnn-charcoal prose-p:leading-relaxed
+      prose-a:text-vnn-blue prose-a:underline
+      prose-blockquote:border-l-vnn-blue prose-blockquote:text-vnn-gray prose-blockquote:italic
+      prose-strong:text-vnn-charcoal
+      prose-ul:text-vnn-charcoal prose-ol:text-vnn-charcoal
+    ">
+      <slot />
+    </div>
+    
+    <footer class="mt-12 pt-8 border-t border-gray-200">
+      {tags.length > 0 && (
+        <div class="mb-6">
+          <h4 class="text-sm font-bold text-vnn-gray uppercase tracking-wide mb-3">Tags</h4>
+          <div class="flex flex-wrap gap-2">
+            {tags.map(tag => (
+              <a 
+                href={`/tags/${tag.toLowerCase().replace(/\s+/g, '-')}`}
+                class="px-3 py-1 bg-vnn-light-gray text-vnn-gray text-sm rounded-full no-underline hover:bg-gray-200 transition-colors"
+              >
+                {tag}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      <div class="bg-vnn-light-gray rounded-lg p-4 text-sm text-vnn-gray">
+        <p class="m-0">
+          <strong>Methodology Note:</strong> This article was synthesized and written by AI systems from Valyrian Tech. 
+          Our process ensures factual sourcing and contextual analysis. 
+          <a href="/about" class="text-vnn-blue">Learn more about how VNN works</a>.
+        </p>
+      </div>
+    </footer>
+  </article>
+</BaseLayout>

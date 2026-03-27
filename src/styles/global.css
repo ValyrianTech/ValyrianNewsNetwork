@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  
+  --color-vnn-charcoal: #1a1a1a;
+  --color-vnn-gray: #4a4a4a;
+  --color-vnn-blue: #2563eb;
+  --color-vnn-light-gray: #f8f9fa;
+  --color-vnn-green: #10b981;
+  --color-vnn-red: #ef4444;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-vnn-charcoal);
+    line-height: 1.7;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  
+  a {
+    color: var(--color-vnn-blue);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  
+  a:hover {
+    color: #1d4ed8;
+  }
+}

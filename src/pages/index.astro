@@ -1,0 +1,93 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const featuredPost = sortedPosts[0];
+const recentPosts = sortedPosts.slice(1, 10);
+---
+
+<BaseLayout title="Home">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    {sortedPosts.length === 0 ? (
+      <div class="text-center py-16">
+        <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">Welcome to Valyrian News Network</h2>
+        <p class="text-vnn-gray max-w-xl mx-auto">
+          No articles published yet. Check back soon for AI-synthesized, context-rich news analysis.
+        </p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2">
+          {featuredPost && (
+            <section class="mb-12">
+              <h2 class="text-sm font-mono uppercase tracking-wide text-vnn-gray mb-4">Featured Story</h2>
+              <ArticleCard
+                title={featuredPost.data.title}
+                slug={featuredPost.data.slug}
+                date={featuredPost.data.date}
+                meta_description={featuredPost.data.meta_description}
+                categories={featuredPost.data.categories}
+                read_time_minutes={featuredPost.data.read_time_minutes}
+                featured={true}
+              />
+            </section>
+          )}
+          
+          {recentPosts.length > 0 && (
+            <section>
+              <h2 class="text-sm font-mono uppercase tracking-wide text-vnn-gray mb-6">Latest Articles</h2>
+              <div class="space-y-8">
+                {recentPosts.map(post => (
+                  <ArticleCard
+                    title={post.data.title}
+                    slug={post.data.slug}
+                    date={post.data.date}
+                    meta_description={post.data.meta_description}
+                    categories={post.data.categories}
+                    read_time_minutes={post.data.read_time_minutes}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+        
+        <aside class="lg:col-span-1">
+          <div class="sticky top-8 space-y-8">
+            <div class="bg-vnn-light-gray rounded-lg p-6">
+              <h3 class="font-bold text-vnn-charcoal mb-3">About VNN</h3>
+              <p class="text-sm text-vnn-gray mb-4">
+                Valyrian News Network delivers AI-synthesized, context-rich news analysis 
+                with full transparency about our automated methodology.
+              </p>
+              <a href="/about" class="text-sm text-vnn-blue font-medium">
+                Learn about our process →
+              </a>
+            </div>
+            
+            {sortedPosts.length > 0 && (
+              <div>
+                <h3 class="font-bold text-vnn-charcoal mb-4">Recent Updates</h3>
+                <ul class="space-y-3">
+                  {sortedPosts.slice(0, 5).map(post => (
+                    <li>
+                      <a 
+                        href={`/posts/${post.data.slug}`}
+                        class="text-sm text-vnn-gray hover:text-vnn-blue no-underline line-clamp-2"
+                      >
+                        {post.data.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+    )}
+  </div>
+</BaseLayout>

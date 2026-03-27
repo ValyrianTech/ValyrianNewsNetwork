@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  
+  const tags = new Set<string>();
+  posts.forEach(post => {
+    post.data.tags.forEach(tag => {
+      tags.add(tag.toLowerCase().replace(/\s+/g, '-'));
+    });
+  });
+  
+  return Array.from(tags).map(tag => ({
+    params: { tag },
+    props: { 
+      tag,
+      posts: posts.filter(post => 
+        post.data.tags.some(t => t.toLowerCase().replace(/\s+/g, '-') === tag)
+      )
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+const sortedPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const displayTag = tag.split('-').map(word => 
+  word.charAt(0).toUpperCase() + word.slice(1)
+).join(' ');
+---
+
+<BaseLayout title={`Articles tagged "${displayTag}"`} description={`Browse all VNN articles tagged with ${displayTag}.`}>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <p class="text-sm font-mono uppercase tracking-wide text-vnn-gray mb-2">Tag</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-vnn-charcoal">#{displayTag}</h1>
+      <p class="text-vnn-gray mt-2">{sortedPosts.length} article{sortedPosts.length !== 1 ? 's' : ''}</p>
+    </header>
+    
+    {sortedPosts.length === 0 ? (
+      <p class="text-vnn-gray">No articles found with this tag.</p>
+    ) : (
+      <div class="space-y-8">
+        {sortedPosts.map(post => (
+          <ArticleCard
+            title={post.data.title}
+            slug={post.data.slug}
+            date={post.data.date}
+            meta_description={post.data.meta_description}
+            categories={post.data.categories}
+            read_time_minutes={post.data.read_time_minutes}
+          />
+        ))}
+      </div>
+    )}
+    
+    <div class="mt-12 pt-8 border-t border-gray-200">
+      <a href="/" class="text-vnn-blue hover:underline">← Back to Home</a>
+    </div>
+  </div>
+</BaseLayout>

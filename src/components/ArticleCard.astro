@@ -1,0 +1,45 @@
+---
+interface Props {
+  title: string;
+  slug: string;
+  date: Date;
+  meta_description: string;
+  categories: string[];
+  read_time_minutes: number;
+  featured?: boolean;
+}
+
+const { title, slug, date, meta_description, categories, read_time_minutes, featured = false } = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<article class={`${featured ? 'border-l-4 border-vnn-blue pl-4' : ''}`}>
+  <div class="flex flex-wrap gap-2 mb-2">
+    {categories.map(category => (
+      <span class="text-xs font-mono uppercase tracking-wide text-vnn-blue">
+        {category}
+      </span>
+    ))}
+  </div>
+  
+  <h2 class={`${featured ? 'text-2xl md:text-3xl' : 'text-xl'} font-bold mb-2 leading-tight`}>
+    <a href={`/posts/${slug}`} class="text-vnn-charcoal no-underline hover:text-vnn-blue transition-colors">
+      {title}
+    </a>
+  </h2>
+  
+  <p class="text-vnn-gray mb-3 line-clamp-2">
+    {meta_description}
+  </p>
+  
+  <div class="flex items-center gap-4 text-sm text-vnn-gray font-mono">
+    <time datetime={date.toISOString()}>{formattedDate}</time>
+    <span>·</span>
+    <span>{read_time_minutes} min read</span>
+  </div>
+</article>
