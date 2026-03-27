@@ -5,7 +5,7 @@ VNN Article Publisher
 This script takes an article from the SERENDIPITY pipeline output and
 publishes it to the VNN website by:
 1. Validating the article front matter
-2. Copying it to src/content/posts/
+2. Copying it to src/content/posts/YYYY/MM/DD/ (date-based folder structure)
 3. Optionally committing the change to git
 
 Usage:
@@ -73,6 +73,20 @@ def validate_front_matter(front_matter: dict) -> list[str]:
     return errors
 
 
+def get_date_path(front_matter: dict) -> Path:
+    """Generate date-based path (YYYY/MM/DD) from article date."""
+    date_val = front_matter['date']
+    
+    if isinstance(date_val, datetime):
+        dt = date_val
+    elif isinstance(date_val, str):
+        dt = datetime.fromisoformat(date_val.replace('Z', '+00:00'))
+    else:
+        dt = datetime.now()
+    
+    return Path(str(dt.year)) / f"{dt.month:02d}" / f"{dt.day:02d}"
+
+
 def generate_filename(front_matter: dict) -> str:
     """Generate filename from slug."""
     return f"{front_matter['slug']}.md"
@@ -122,10 +136,12 @@ def publish_article(
     if 'style' not in front_matter:
         front_matter['style'] = 'formal_news'
     
+    date_path = get_date_path(front_matter)
     filename = generate_filename(front_matter)
-    dest_path = dest_dir / filename
+    full_dest_dir = dest_dir / date_path
+    dest_path = full_dest_dir / filename
     
-    dest_dir.mkdir(parents=True, exist_ok=True)
+    full_dest_dir.mkdir(parents=True, exist_ok=True)
     
     new_content = "---\n"
     new_content += yaml.dump(front_matter, default_flow_style=False, allow_unicode=True, sort_keys=False)

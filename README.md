@@ -24,7 +24,7 @@ VNN is a static news website that publishes AI-generated articles with complete 
 ├── public/                # Static assets
 ├── src/
 │   ├── components/        # Astro components (Header, Footer, ArticleCard)
-│   ├── content/posts/     # Article markdown files
+│   ├── content/posts/     # Article markdown files (organized by YYYY/MM/DD/)
 │   ├── layouts/           # Page layouts (BaseLayout, ArticleLayout)
 │   ├── pages/             # Routes (index, about, article pages)
 │   └── styles/            # Global CSS with VNN brand
