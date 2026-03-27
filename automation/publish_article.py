@@ -92,6 +92,25 @@ def generate_filename(front_matter: dict) -> str:
     return f"{front_matter['slug']}.md"
 
 
+def find_existing_slug(posts_dir: Path, slug: str) -> Path | None:
+    """Search for an existing article with the same slug across all date folders."""
+    if not posts_dir.exists():
+        return None
+    
+    for md_file in posts_dir.rglob('*.md'):
+        try:
+            content = md_file.read_text(encoding='utf-8')
+            match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+            if match:
+                fm = yaml.safe_load(match.group(1))
+                if fm and fm.get('slug') == slug:
+                    return md_file
+        except Exception:
+            continue
+    
+    return None
+
+
 def publish_article(
     source_path: Path,
     dest_dir: Path,
@@ -126,6 +145,14 @@ def publish_article(
         raise ValueError("Article validation failed")
     
     print("✅ Front matter validated")
+    
+    existing = find_existing_slug(dest_dir, front_matter['slug'])
+    if existing:
+        print(f"❌ Duplicate slug detected!")
+        print(f"   Slug '{front_matter['slug']}' already exists at: {existing}")
+        raise ValueError(f"Article with slug '{front_matter['slug']}' already exists")
+    
+    print("✅ No duplicate slug found")
     
     if 'draft' not in front_matter:
         front_matter['draft'] = False
