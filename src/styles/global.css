@@ -330,7 +330,7 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .country-dropdown-search-wrap {

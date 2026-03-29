@@ -2,33 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
-
-const COUNTRY_TAGS: Record<string, string> = {
-  'netherlands': 'Netherlands',
-  'belgium': 'Belgium',
-  'france': 'France',
-  'germany': 'Germany',
-  'uk': 'UK',
-  'uk news': 'UK',
-  'uk politics': 'UK',
-  'russia': 'Russia',
-  'ukraine': 'Ukraine',
-  'china': 'China',
-  'iran': 'Iran',
-  'israel': 'Israel',
-  'yemen': 'Yemen',
-  'us': 'US',
-  'japan': 'Japan',
-};
-
-function getCountries(tags: string[]): string[] {
-  const countries = new Set<string>();
-  for (const tag of tags) {
-    const match = COUNTRY_TAGS[tag.toLowerCase()];
-    if (match) countries.add(match);
-  }
-  return Array.from(countries);
-}
+import { getCountries } from '../utils/countries';
 
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -78,7 +52,7 @@ const dateGroups = Object.entries(groupedByDate);
         
         <!-- Country Filter -->
         {activeCountries.length > 0 && (
-          <nav class="py-4 animate-fade-in-up" id="country-filter">
+          <nav class="py-4 animate-fade-in-up relative z-50" id="country-filter">
             <div class="relative inline-block" id="country-dropdown">
               <button class="country-dropdown-trigger" id="country-trigger" aria-expanded="false" aria-haspopup="listbox">
                 <span class="country-dropdown-label">Filter by Country</span>
