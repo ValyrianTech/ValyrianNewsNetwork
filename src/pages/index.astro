@@ -33,8 +33,8 @@ for (const post of sortedPosts) {
   articleDateCounts[key] = (articleDateCounts[key] || 0) + 1;
 }
 
-// Group remaining posts by date
-const groupedByDate = remainingPosts.reduce((groups: Record<string, typeof remainingPosts>, post) => {
+// Group ALL posts by date (used when date filter is active and hero is hidden)
+const allGroupedByDate = sortedPosts.reduce((groups: Record<string, typeof sortedPosts>, post) => {
   const dateKey = post.data.date.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -48,7 +48,23 @@ const groupedByDate = remainingPosts.reduce((groups: Record<string, typeof remai
   return groups;
 }, {});
 
-const dateGroups = Object.entries(groupedByDate);
+// Group remaining posts (excluding hero) for the default view
+const remainingGroupedByDate = remainingPosts.reduce((groups: Record<string, typeof remainingPosts>, post) => {
+  const dateKey = post.data.date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  if (!groups[dateKey]) {
+    groups[dateKey] = [];
+  }
+  groups[dateKey].push(post);
+  return groups;
+}, {});
+
+const allDateGroups = Object.entries(allGroupedByDate);
+const remainingDateGroups = Object.entries(remainingGroupedByDate);
 ---
 
 <BaseLayout title="Home">
@@ -172,34 +188,61 @@ const dateGroups = Object.entries(groupedByDate);
           </div>
         </section>
 
-        <!-- Date-Grouped Article Sections -->
-        {dateGroups.map(([dateLabel, posts], groupIndex) => (
-          <section class={`date-group animate-fade-in-up stagger-${Math.min(groupIndex + 2, 6)}`}>
-            <!-- Edition Date Header -->
-            <div class="flex items-center gap-6 py-4 mt-4 date-group-header">
-              <div class="h-px bg-vnn-rule flex-1"></div>
-              <h2 class="edition-date shrink-0 m-0">{dateLabel}</h2>
-              <div class="h-px bg-vnn-rule flex-1"></div>
-            </div>
-            
-            <!-- Articles Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 py-8">
-              {posts.map((post: typeof remainingPosts[0]) => (
-                <div class="hairline-top pt-6 filterable-article" data-countries={getCountries(post.data.tags).join(',')} data-date={formatDateISO(post.data.date)}>
-                  <ArticleCard
-                    title={post.data.title}
-                    slug={post.data.slug}
-                    date={post.data.date}
-                    meta_description={post.data.meta_description}
-                    categories={post.data.categories}
-                    read_time_minutes={post.data.read_time_minutes}
-                    showDate={false}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+        <!-- Date-Grouped Sections (default view, excludes hero articles) -->
+        <div id="default-date-groups">
+          {remainingDateGroups.map(([dateLabel, posts], groupIndex) => (
+            <section class={`date-group animate-fade-in-up stagger-${Math.min(groupIndex + 2, 6)}`}>
+              <div class="flex items-center gap-6 py-4 mt-4 date-group-header">
+                <div class="h-px bg-vnn-rule flex-1"></div>
+                <h2 class="edition-date shrink-0 m-0">{dateLabel}</h2>
+                <div class="h-px bg-vnn-rule flex-1"></div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 py-8">
+                {posts.map((post: typeof remainingPosts[0]) => (
+                  <div class="hairline-top pt-6 filterable-article" data-countries={getCountries(post.data.tags).join(',')} data-date={formatDateISO(post.data.date)}>
+                    <ArticleCard
+                      title={post.data.title}
+                      slug={post.data.slug}
+                      date={post.data.date}
+                      meta_description={post.data.meta_description}
+                      categories={post.data.categories}
+                      read_time_minutes={post.data.read_time_minutes}
+                      showDate={false}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        <!-- Date-Grouped Sections (filtered view, includes ALL articles) -->
+        <div id="filtered-date-groups" style="display: none;">
+          {allDateGroups.map(([dateLabel, posts], groupIndex) => (
+            <section class={`date-group-all animate-fade-in-up stagger-${Math.min(groupIndex + 2, 6)}`}>
+              <div class="flex items-center gap-6 py-4 mt-4 date-group-header">
+                <div class="h-px bg-vnn-rule flex-1"></div>
+                <h2 class="edition-date shrink-0 m-0">{dateLabel}</h2>
+                <div class="h-px bg-vnn-rule flex-1"></div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 py-8">
+                {posts.map((post: typeof sortedPosts[0]) => (
+                  <div class="hairline-top pt-6 filterable-article-all" data-countries={getCountries(post.data.tags).join(',')} data-date={formatDateISO(post.data.date)}>
+                    <ArticleCard
+                      title={post.data.title}
+                      slug={post.data.slug}
+                      date={post.data.date}
+                      meta_description={post.data.meta_description}
+                      categories={post.data.categories}
+                      read_time_minutes={post.data.read_time_minutes}
+                      showDate={false}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
         
         <!-- Support Banner -->
         <section class="my-12 hairline-top py-10">
@@ -238,9 +281,9 @@ const dateGroups = Object.entries(groupedByDate);
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Elements
-      const articles = document.querySelectorAll<HTMLElement>('.filterable-article');
-      const sectionDateGroups = document.querySelectorAll<HTMLElement>('.date-group');
       const heroSection = document.getElementById('hero-section');
+      const defaultDateGroupsWrap = document.getElementById('default-date-groups') as HTMLElement | null;
+      const filteredDateGroupsWrap = document.getElementById('filtered-date-groups') as HTMLElement | null;
       const clearBtn = document.getElementById('filter-clear') as HTMLButtonElement | null;
 
       // Country dropdown elements
@@ -262,7 +305,8 @@ const dateGroups = Object.entries(groupedByDate);
 
       if (!countryTrigger || !countryPanel || !countrySearch || !countryList || !countryLabel ||
           !dateTrigger || !datePanel || !dateLabel || !calGrid || !calMonthLabel ||
-          !calPrev || !calNext || !calToday || !clearBtn) return;
+          !calPrev || !calNext || !calToday || !clearBtn ||
+          !defaultDateGroupsWrap || !filteredDateGroupsWrap) return;
 
       // Article date counts from server
       const articleDateCounts: Record<string, number> = (window as any).__articleDateCounts || {};
@@ -367,14 +411,14 @@ const dateGroups = Object.entries(groupedByDate);
         calGrid!.innerHTML = html;
       }
 
-      // ── Unified filter logic ──
-      function applyFilters() {
-        articles.forEach(a => {
+      // ── Helper: filter articles within a container ──
+      function filterArticlesIn(container: HTMLElement, articleClass: string, groupClass: string) {
+        const arts = container.querySelectorAll<HTMLElement>(`.${articleClass}`);
+        arts.forEach(a => {
           const matchesCountry = activeCountry === 'all' ||
             (a.dataset.countries || '').split(',').includes(activeCountry);
           const matchesDate = activeDate === 'all' ||
             a.dataset.date === activeDate;
-
           if (matchesCountry && matchesDate) {
             a.style.display = '';
             a.classList.remove('filtered-hidden');
@@ -383,15 +427,46 @@ const dateGroups = Object.entries(groupedByDate);
             a.classList.add('filtered-hidden');
           }
         });
-
-        sectionDateGroups.forEach(group => {
-          const visible = group.querySelectorAll('.filterable-article:not(.filtered-hidden)');
+        const groups = container.querySelectorAll<HTMLElement>(`.${groupClass}`);
+        groups.forEach(group => {
+          const visible = group.querySelectorAll(`.${articleClass}:not(.filtered-hidden)`);
           group.style.display = visible.length === 0 ? 'none' : '';
         });
+      }
 
-        if (heroSection) {
-          const visibleHero = heroSection.querySelectorAll('.filterable-article:not(.filtered-hidden)');
-          heroSection.style.display = visibleHero.length === 0 ? 'none' : '';
+      // ── Unified filter logic ──
+      function applyFilters() {
+        const isDateFiltered = activeDate !== 'all';
+
+        // Swap between default view (hero + remaining) and filtered view (all articles in grid)
+        if (isDateFiltered) {
+          heroSection!.style.display = 'none';
+          defaultDateGroupsWrap!.style.display = 'none';
+          filteredDateGroupsWrap!.style.display = '';
+          filterArticlesIn(filteredDateGroupsWrap!, 'filterable-article-all', 'date-group-all');
+        } else {
+          filteredDateGroupsWrap!.style.display = 'none';
+          defaultDateGroupsWrap!.style.display = '';
+          heroSection!.style.display = '';
+
+          // Filter hero articles
+          const heroArts = heroSection!.querySelectorAll<HTMLElement>('.filterable-article');
+          heroArts.forEach(a => {
+            const matchesCountry = activeCountry === 'all' ||
+              (a.dataset.countries || '').split(',').includes(activeCountry);
+            if (matchesCountry) {
+              a.style.display = '';
+              a.classList.remove('filtered-hidden');
+            } else {
+              a.style.display = 'none';
+              a.classList.add('filtered-hidden');
+            }
+          });
+          const visibleHero = heroSection!.querySelectorAll('.filterable-article:not(.filtered-hidden)');
+          heroSection!.style.display = visibleHero.length === 0 ? 'none' : '';
+
+          // Filter default date groups
+          filterArticlesIn(defaultDateGroupsWrap!, 'filterable-article', 'date-group');
         }
 
         clearBtn!.style.display = (activeCountry !== 'all' || activeDate !== 'all') ? '' : 'none';
