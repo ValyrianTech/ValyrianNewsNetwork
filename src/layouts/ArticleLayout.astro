@@ -31,60 +31,60 @@ const formattedDate = date.toLocaleDateString('en-US', {
 ---
 
 <BaseLayout title={title} description={meta_description}>
-  <article class="max-w-3xl mx-auto px-4 py-8">
-    <header class="mb-8">
-      <div class="flex flex-wrap gap-2 mb-4">
+  <article class="max-w-3xl mx-auto px-6 py-12">
+    <header class="mb-10 animate-fade-in-up">
+      <div class="flex flex-wrap gap-3 mb-5">
         {categories.map(category => (
           <a 
             href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
-            class="text-xs font-mono uppercase tracking-wide text-vnn-blue no-underline hover:underline"
+            class="category-pill no-underline hover:underline"
           >
             {category}
           </a>
         ))}
       </div>
       
-      <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight text-vnn-charcoal">
+      <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-black mb-5 leading-[1.1] tracking-tight text-vnn-ink">
         {title}
       </h1>
       
-      <div class="flex flex-wrap items-center gap-4 text-sm text-vnn-gray font-mono">
-        <span class="font-medium text-vnn-charcoal">Valyrian News Network</span>
-        <span>·</span>
+      <div class="flex flex-wrap items-center gap-3 edition-date">
+        <span class="font-semibold text-vnn-ink" style="font-size: 0.75rem;">Valyrian News Network</span>
+        <span class="text-vnn-rule">—</span>
         <time datetime={date.toISOString()}>{formattedDate}</time>
-        <span>·</span>
+        <span class="text-vnn-rule">—</span>
         <span>{read_time_minutes} min read</span>
       </div>
     </header>
     
     {featured_image && (
-      <figure class="mb-8">
+      <figure class="mb-10 animate-fade-in-up stagger-1">
         <img 
           src={featured_image} 
           alt={featured_image_caption || title}
-          class="w-full rounded-lg"
+          class="w-full"
         />
         {featured_image_caption && (
-          <figcaption class="text-sm text-vnn-gray mt-2 text-center">
+          <figcaption class="text-sm text-vnn-muted mt-3 text-center font-mono" style="font-size: 0.75rem;">
             {featured_image_caption}
           </figcaption>
         )}
       </figure>
     )}
     
-    <div class="article-content">
+    <div class="article-content animate-fade-in-up stagger-2">
       <slot />
     </div>
     
-    <footer class="mt-12 pt-8 border-t border-gray-200">
+    <footer class="mt-14 pt-10 hairline-top">
       {tags.length > 0 && (
-        <div class="mb-6">
-          <h4 class="text-sm font-bold text-vnn-gray uppercase tracking-wide mb-3">Tags</h4>
+        <div class="mb-8">
+          <h4 class="font-mono text-xs uppercase tracking-[0.15em] text-vnn-muted mb-4">Tags</h4>
           <div class="flex flex-wrap gap-2">
             {tags.map(tag => (
               <a 
                 href={`/tags/${tag.toLowerCase().replace(/\s+/g, '-')}`}
-                class="px-3 py-1 bg-vnn-light-gray text-vnn-gray text-sm rounded-full no-underline hover:bg-gray-200 transition-colors"
+                class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors"
               >
                 {tag}
               </a>
@@ -93,11 +93,11 @@ const formattedDate = date.toLocaleDateString('en-US', {
         </div>
       )}
       
-      <div class="bg-vnn-light-gray rounded-lg p-4 text-sm text-vnn-gray">
+      <div class="bg-vnn-paper border border-vnn-rule p-5 text-sm text-vnn-gray">
         <p class="m-0">
-          <strong>Methodology Note:</strong> This article was synthesized and written by AI systems from Valyrian Tech. 
+          <strong class="text-vnn-ink">Methodology Note:</strong> This article was synthesized and written by AI systems from Valyrian Tech. 
           Our process ensures factual sourcing and contextual analysis. 
-          <a href="/about" class="text-vnn-blue">Learn more about how VNN works</a>.
+          <a href="/about" class="text-vnn-vermillion no-underline hover:underline">Learn more about how VNN works</a>.
         </p>
       </div>
     </footer>

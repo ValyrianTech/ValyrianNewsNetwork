@@ -7,9 +7,11 @@ interface Props {
   categories: string[];
   read_time_minutes: number;
   featured?: boolean;
+  compact?: boolean;
+  showDate?: boolean;
 }
 
-const { title, slug, date, meta_description, categories, read_time_minutes, featured = false } = Astro.props;
+const { title, slug, date, meta_description, categories, read_time_minutes, featured = false, compact = false, showDate = true } = Astro.props;
 
 const formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -18,28 +20,82 @@ const formattedDate = date.toLocaleDateString('en-US', {
 });
 ---
 
-<article class={`${featured ? 'border-l-4 border-vnn-blue pl-4' : ''}`}>
-  <div class="flex flex-wrap gap-2 mb-2">
-    {categories.map(category => (
-      <span class="text-xs font-mono uppercase tracking-wide text-vnn-blue">
-        {category}
-      </span>
-    ))}
-  </div>
-  
-  <h2 class={`${featured ? 'text-2xl md:text-3xl' : 'text-xl'} font-bold mb-2 leading-tight`}>
-    <a href={`/posts/${slug}`} class="text-vnn-charcoal no-underline hover:text-vnn-blue transition-colors">
-      {title}
-    </a>
-  </h2>
-  
-  <p class="text-vnn-gray mb-3 line-clamp-2">
-    {meta_description}
-  </p>
-  
-  <div class="flex items-center gap-4 text-sm text-vnn-gray font-mono">
-    <time datetime={date.toISOString()}>{formattedDate}</time>
-    <span>·</span>
-    <span>{read_time_minutes} min read</span>
-  </div>
-</article>
+{featured ? (
+  <article class="article-card group">
+    <div class="flex flex-wrap gap-3 mb-3">
+      {categories.map(category => (
+        <span class="category-pill">{category}</span>
+      ))}
+    </div>
+    
+    <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-black mb-4 leading-[1.1] tracking-tight">
+      <a href={`/posts/${slug}`} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
+        {title}
+      </a>
+    </h2>
+    
+    <p class="text-vnn-gray text-lg leading-relaxed mb-4 max-w-2xl font-body">
+      {meta_description}
+    </p>
+    
+    {showDate && (
+      <div class="flex items-center gap-3 edition-date">
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+        <span class="text-vnn-rule">—</span>
+        <span>{read_time_minutes} min read</span>
+      </div>
+    )}
+  </article>
+) : compact ? (
+  <article class="article-card group">
+    <div class="flex flex-wrap gap-2 mb-1.5">
+      {categories.map(category => (
+        <span class="category-pill" style="font-size: 0.6rem;">{category}</span>
+      ))}
+    </div>
+    
+    <h3 class="font-display text-lg font-bold mb-1.5 leading-snug">
+      <a href={`/posts/${slug}`} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
+        {title}
+      </a>
+    </h3>
+    
+    <p class="text-vnn-gray text-sm leading-relaxed line-clamp-2 mb-2">
+      {meta_description}
+    </p>
+    
+    {showDate && (
+      <div class="edition-date" style="font-size: 0.6rem;">
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+        <span class="text-vnn-rule mx-1.5">—</span>
+        <span>{read_time_minutes} min read</span>
+      </div>
+    )}
+  </article>
+) : (
+  <article class="article-card group">
+    <div class="flex flex-wrap gap-2 mb-2">
+      {categories.map(category => (
+        <span class="category-pill">{category}</span>
+      ))}
+    </div>
+    
+    <h3 class="font-display text-xl md:text-2xl font-bold mb-2 leading-tight">
+      <a href={`/posts/${slug}`} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
+        {title}
+      </a>
+    </h3>
+    
+    <p class="text-vnn-gray leading-relaxed line-clamp-2 mb-2.5">
+      {meta_description}
+    </p>
+    
+    {showDate && (
+      <div class="edition-date">
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+        <span class="text-vnn-rule mx-2">—</span>
+        <span>{read_time_minutes} min read</span>
+      </div>
+    )}
+  </article>
+)}

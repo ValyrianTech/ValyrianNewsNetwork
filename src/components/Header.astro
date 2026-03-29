@@ -3,33 +3,47 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
 ];
+
+const today = new Date().toLocaleDateString('en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
 ---
 
-<header class="border-b border-gray-200 bg-white">
-  <div class="max-w-6xl mx-auto px-4 py-4">
-    <div class="flex items-center justify-between">
-      <a href="/" class="no-underline hover:no-underline">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-vnn-blue rounded flex items-center justify-center">
-            <span class="text-white font-bold text-lg font-serif">V</span>
-          </div>
-          <div>
-            <h1 class="text-xl font-bold text-vnn-charcoal m-0 leading-tight">Valyrian News Network</h1>
-            <p class="text-xs text-vnn-gray m-0">Understanding, Automated.</p>
-          </div>
-        </div>
-      </a>
-      
-      <nav class="flex items-center gap-6">
+<header class="bg-vnn-cream">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Top bar with date and nav -->
+    <div class="flex items-center justify-between py-3 hairline-bottom">
+      <span class="edition-date">{today}</span>
+      <nav class="flex items-center gap-8">
         {navLinks.map(link => (
           <a 
             href={link.href} 
-            class="text-vnn-charcoal no-underline hover:text-vnn-blue transition-colors font-medium"
+            class="text-vnn-gray no-underline hover:text-vnn-vermillion transition-colors font-mono text-xs uppercase tracking-widest font-medium"
           >
             {link.label}
           </a>
         ))}
       </nav>
+    </div>
+    
+    <!-- Masthead -->
+    <div class="py-6 text-center">
+      <a href="/" class="no-underline hover:no-underline inline-block">
+        <h1 class="font-display text-4xl md:text-5xl font-black text-vnn-ink m-0 leading-none tracking-tight">
+          Valyrian News Network
+        </h1>
+        <p class="font-mono text-xs tracking-[0.3em] uppercase text-vnn-muted mt-2 m-0">
+          Understanding, Automated
+        </p>
+      </a>
+      <div class="mt-5 flex items-center gap-0">
+        <div class="h-px bg-vnn-rule flex-1"></div>
+        <div class="h-[3px] w-24 bg-vnn-vermillion"></div>
+        <div class="h-px bg-vnn-rule flex-1"></div>
+      </div>
     </div>
   </div>
 </header>

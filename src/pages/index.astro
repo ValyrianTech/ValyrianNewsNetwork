@@ -6,41 +6,94 @@ import ArticleCard from '../components/ArticleCard.astro';
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 const featuredPost = sortedPosts[0];
-const recentPosts = sortedPosts.slice(1, 10);
+const secondaryPosts = sortedPosts.slice(1, 4);
+const remainingPosts = sortedPosts.slice(4);
+
+// Group remaining posts by date
+const groupedByDate = remainingPosts.reduce((groups: Record<string, typeof remainingPosts>, post) => {
+  const dateKey = post.data.date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  if (!groups[dateKey]) {
+    groups[dateKey] = [];
+  }
+  groups[dateKey].push(post);
+  return groups;
+}, {});
+
+const dateGroups = Object.entries(groupedByDate);
 ---
 
 <BaseLayout title="Home">
-  <div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="paper-texture">
     {sortedPosts.length === 0 ? (
-      <div class="text-center py-16">
-        <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">Welcome to Valyrian News Network</h2>
-        <p class="text-vnn-gray max-w-xl mx-auto">
+      <div class="text-center py-24 max-w-xl mx-auto">
+        <h2 class="font-display text-3xl font-bold text-vnn-ink mb-4">Welcome to Valyrian News Network</h2>
+        <p class="text-vnn-gray">
           No articles published yet. Check back soon for AI-synthesized, context-rich news analysis.
         </p>
       </div>
     ) : (
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2">
-          {featuredPost && (
-            <section class="mb-12">
-              <h2 class="text-sm font-mono uppercase tracking-wide text-vnn-gray mb-4">Featured Story</h2>
-              <ArticleCard
-                title={featuredPost.data.title}
-                slug={featuredPost.data.slug}
-                date={featuredPost.data.date}
-                meta_description={featuredPost.data.meta_description}
-                categories={featuredPost.data.categories}
-                read_time_minutes={featuredPost.data.read_time_minutes}
-                featured={true}
-              />
-            </section>
-          )}
-          
-          {recentPosts.length > 0 && (
-            <section>
-              <h2 class="text-sm font-mono uppercase tracking-wide text-vnn-gray mb-6">Latest Articles</h2>
-              <div class="space-y-8">
-                {recentPosts.map(post => (
+      <div class="max-w-7xl mx-auto px-6">
+        
+        <!-- Hero Section: Featured + Secondary -->
+        <section class="py-8 animate-fade-in-up">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 items-start">
+            
+            <!-- Featured Story (left, dominant) -->
+            {featuredPost && (
+              <div class="lg:col-span-7 lg:pr-10 lg:border-r border-vnn-rule pb-6 lg:pb-0">
+                <ArticleCard
+                  title={featuredPost.data.title}
+                  slug={featuredPost.data.slug}
+                  date={featuredPost.data.date}
+                  meta_description={featuredPost.data.meta_description}
+                  categories={featuredPost.data.categories}
+                  read_time_minutes={featuredPost.data.read_time_minutes}
+                  featured={true}
+                />
+              </div>
+            )}
+            
+            <!-- Secondary Stories (right column, stacked) -->
+            {secondaryPosts.length > 0 && (
+              <div class="lg:col-span-5 lg:pl-10 flex flex-col">
+                {secondaryPosts.map((post, i) => (
+                  <div class={`animate-fade-in-up stagger-${i + 1} ${i > 0 ? 'pt-8 mt-8 hairline-top' : ''}`}>
+                    <ArticleCard
+                      title={post.data.title}
+                      slug={post.data.slug}
+                      date={post.data.date}
+                      meta_description={post.data.meta_description}
+                      categories={post.data.categories}
+                      read_time_minutes={post.data.read_time_minutes}
+                      compact={true}
+                      showDate={false}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <!-- Date-Grouped Article Sections -->
+        {dateGroups.map(([dateLabel, posts], groupIndex) => (
+          <section class={`animate-fade-in-up stagger-${Math.min(groupIndex + 2, 6)}`}>
+            <!-- Edition Date Header -->
+            <div class="flex items-center gap-6 py-4 mt-4">
+              <div class="h-px bg-vnn-rule flex-1"></div>
+              <h2 class="edition-date shrink-0 m-0">{dateLabel}</h2>
+              <div class="h-px bg-vnn-rule flex-1"></div>
+            </div>
+            
+            <!-- Articles Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 py-8">
+              {posts.map((post: typeof remainingPosts[0]) => (
+                <div class="hairline-top pt-6">
                   <ArticleCard
                     title={post.data.title}
                     slug={post.data.slug}
@@ -48,45 +101,34 @@ const recentPosts = sortedPosts.slice(1, 10);
                     meta_description={post.data.meta_description}
                     categories={post.data.categories}
                     read_time_minutes={post.data.read_time_minutes}
+                    showDate={false}
                   />
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
-        
-        <aside class="lg:col-span-1">
-          <div class="sticky top-8 space-y-8">
-            <div class="bg-vnn-light-gray rounded-lg p-6">
-              <h3 class="font-bold text-vnn-charcoal mb-3">About VNN</h3>
-              <p class="text-sm text-vnn-gray mb-4">
-                Valyrian News Network delivers AI-synthesized, context-rich news analysis 
-                with full transparency about our automated methodology.
-              </p>
-              <a href="/about" class="text-sm text-vnn-blue font-medium">
-                Learn about our process →
-              </a>
+                </div>
+              ))}
             </div>
-            
-            {sortedPosts.length > 0 && (
-              <div>
-                <h3 class="font-bold text-vnn-charcoal mb-4">Recent Updates</h3>
-                <ul class="space-y-3">
-                  {sortedPosts.slice(0, 5).map(post => (
-                    <li>
-                      <a 
-                        href={`/posts/${post.data.slug}`}
-                        class="text-sm text-vnn-gray hover:text-vnn-blue no-underline line-clamp-2"
-                      >
-                        {post.data.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          </section>
+        ))}
+        
+        <!-- About / Methodology Banner -->
+        <section class="my-12 hairline-top hairline-bottom py-10">
+          <div class="max-w-3xl mx-auto text-center">
+            <p class="font-mono text-xs tracking-[0.2em] uppercase text-vnn-muted mb-3">About Our Methodology</p>
+            <p class="font-display text-2xl md:text-3xl font-bold text-vnn-ink leading-snug mb-4">
+              AI-synthesized news with full transparency
+            </p>
+            <p class="text-vnn-gray max-w-xl mx-auto mb-6">
+              Every article is sourced, analyzed, and composed by automated systems. 
+              We believe in radical transparency about our process.
+            </p>
+            <a 
+              href="/about" 
+              class="inline-block font-mono text-xs uppercase tracking-widest font-semibold text-vnn-vermillion hover:text-vnn-ink transition-colors border-b-2 border-vnn-vermillion hover:border-vnn-ink pb-1"
+            >
+              Learn How VNN Works
+            </a>
           </div>
-        </aside>
+        </section>
+        
       </div>
     )}
   </div>
