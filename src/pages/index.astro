@@ -5,12 +5,7 @@ import ArticleCard from '../components/ArticleCard.astro';
 import { getCountries } from '../utils/countries';
 
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
-const allSorted = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-
-// Limit to last 7 days
-const now = new Date();
-const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-const sortedPosts = allSorted.filter(post => post.data.date >= sevenDaysAgo);
+const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 const featuredPost = sortedPosts[0];
 const secondaryPosts = sortedPosts.slice(1, 4);
@@ -26,29 +21,17 @@ for (const post of sortedPosts) {
 const activeCountries = Object.entries(countryCounts)
   .sort((a, b) => a[0].localeCompare(b[0]));
 
-// Build unique dates (ISO format for values, display format for labels)
+// Date helpers
 function formatDateISO(date: Date): string {
   return date.toISOString().split('T')[0];
 }
-function formatDateDisplay(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
 
-const dateCounts: Record<string, { label: string; count: number }> = {};
+// Build set of dates that have articles (ISO strings) + counts — passed to JS as JSON
+const articleDateCounts: Record<string, number> = {};
 for (const post of sortedPosts) {
   const key = formatDateISO(post.data.date);
-  if (!dateCounts[key]) {
-    dateCounts[key] = { label: formatDateDisplay(post.data.date), count: 0 };
-  }
-  dateCounts[key].count++;
+  articleDateCounts[key] = (articleDateCounts[key] || 0) + 1;
 }
-const activeDates = Object.entries(dateCounts)
-  .sort((a, b) => b[0].localeCompare(a[0]));
 
 // Group remaining posts by date
 const groupedByDate = remainingPosts.reduce((groups: Record<string, typeof remainingPosts>, post) => {
@@ -117,37 +100,30 @@ const dateGroups = Object.entries(groupedByDate);
             </div>
 
             <div class="relative inline-block" id="date-dropdown">
-              <button class="country-dropdown-trigger" id="date-trigger" aria-expanded="false" aria-haspopup="listbox">
+              <button class="country-dropdown-trigger" id="date-trigger" aria-expanded="false">
                 <span class="country-dropdown-label" id="date-label">Filter by Date</span>
                 <svg class="country-dropdown-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               
-              <div class="country-dropdown-panel" id="date-panel" role="listbox" aria-label="Filter articles by date">
-                <div class="country-dropdown-search-wrap">
-                  <input 
-                    type="text" 
-                    class="country-dropdown-search" 
-                    id="date-search" 
-                    placeholder="Search dates…"
-                    autocomplete="off"
-                  />
+              <div class="cal-panel" id="date-panel">
+                <div class="cal-header">
+                  <button class="cal-nav" id="cal-prev" aria-label="Previous month">‹</button>
+                  <span class="cal-month-label" id="cal-month-label"></span>
+                  <button class="cal-nav" id="cal-next" aria-label="Next month">›</button>
                 </div>
-                <div class="country-dropdown-list" id="date-list">
-                  <button class="country-dropdown-item active" data-date="all" role="option" aria-selected="true">
-                    <span class="country-dropdown-item-name">All Dates</span>
-                    <span class="country-dropdown-item-count">{sortedPosts.length}</span>
-                  </button>
-                  {activeDates.map(([dateKey, { label, count }]) => (
-                    <button class="country-dropdown-item" data-date={dateKey} role="option" aria-selected="false">
-                      <span class="country-dropdown-item-name">{label}</span>
-                      <span class="country-dropdown-item-count">{count}</span>
-                    </button>
-                  ))}
+                <div class="cal-weekdays">
+                  <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
                 </div>
+                <div class="cal-grid" id="cal-grid"></div>
+                <button class="cal-today-btn" id="cal-today">Show all dates</button>
               </div>
             </div>
+
+            <script is:inline define:vars={{ articleDateCounts }}>
+              window.__articleDateCounts = articleDateCounts;
+            </script>
 
             <button class="country-clear-btn" id="filter-clear" style="display: none;">
               ✕ Clear filters
@@ -263,7 +239,7 @@ const dateGroups = Object.entries(groupedByDate);
     document.addEventListener('DOMContentLoaded', () => {
       // Elements
       const articles = document.querySelectorAll<HTMLElement>('.filterable-article');
-      const dateGroups = document.querySelectorAll<HTMLElement>('.date-group');
+      const sectionDateGroups = document.querySelectorAll<HTMLElement>('.date-group');
       const heroSection = document.getElementById('hero-section');
       const clearBtn = document.getElementById('filter-clear') as HTMLButtonElement | null;
 
@@ -274,40 +250,70 @@ const dateGroups = Object.entries(groupedByDate);
       const countryList = document.getElementById('country-list') as HTMLElement | null;
       const countryLabel = countryTrigger?.querySelector('.country-dropdown-label') as HTMLElement | null;
 
-      // Date dropdown elements
+      // Calendar elements
       const dateTrigger = document.getElementById('date-trigger') as HTMLButtonElement | null;
       const datePanel = document.getElementById('date-panel') as HTMLElement | null;
-      const dateSearch = document.getElementById('date-search') as HTMLInputElement | null;
-      const dateList = document.getElementById('date-list') as HTMLElement | null;
       const dateLabel = document.getElementById('date-label') as HTMLElement | null;
+      const calGrid = document.getElementById('cal-grid') as HTMLElement | null;
+      const calMonthLabel = document.getElementById('cal-month-label') as HTMLElement | null;
+      const calPrev = document.getElementById('cal-prev') as HTMLButtonElement | null;
+      const calNext = document.getElementById('cal-next') as HTMLButtonElement | null;
+      const calToday = document.getElementById('cal-today') as HTMLButtonElement | null;
 
       if (!countryTrigger || !countryPanel || !countrySearch || !countryList || !countryLabel ||
-          !dateTrigger || !datePanel || !dateSearch || !dateList || !dateLabel || !clearBtn) return;
+          !dateTrigger || !datePanel || !dateLabel || !calGrid || !calMonthLabel ||
+          !calPrev || !calNext || !calToday || !clearBtn) return;
+
+      // Article date counts from server
+      const articleDateCounts: Record<string, number> = (window as any).__articleDateCounts || {};
 
       // State
       let activeCountry = 'all';
       let activeDate = 'all';
-      let openPanel: HTMLElement | null = null;
+      let openPanelEl: HTMLElement | null = null;
+      let calYear: number;
+      let calMonth: number; // 0-indexed
 
-      // ── Dropdown helpers ──
-      function openDropdown(trigger: HTMLButtonElement, panel: HTMLElement, searchEl?: HTMLInputElement, filterFn?: (q: string) => void) {
-        closeAllDropdowns();
-        openPanel = panel;
-        panel.classList.add('open');
-        trigger.setAttribute('aria-expanded', 'true');
-        if (searchEl && filterFn) {
-          searchEl.value = '';
-          filterFn('');
-          setTimeout(() => searchEl.focus(), 50);
-        }
+      // Initialize calendar to the most recent article date, or today
+      const dateKeys = Object.keys(articleDateCounts).sort().reverse();
+      if (dateKeys.length > 0) {
+        const [y, m] = dateKeys[0].split('-').map(Number);
+        calYear = y;
+        calMonth = m - 1;
+      } else {
+        const now = new Date();
+        calYear = now.getFullYear();
+        calMonth = now.getMonth();
       }
 
-      function closeAllDropdowns() {
-        openPanel = null;
-        [countryPanel, datePanel].forEach(p => p!.classList.remove('open'));
-        [countryTrigger, dateTrigger].forEach(t => t!.setAttribute('aria-expanded', 'false'));
+      // ── Panel helpers ──
+      function openCountryDropdown() {
+        closeAllPanels();
+        openPanelEl = countryPanel;
+        countryPanel!.classList.add('open');
+        countryTrigger!.setAttribute('aria-expanded', 'true');
+        countrySearch!.value = '';
+        filterCountryList('');
+        setTimeout(() => countrySearch!.focus(), 50);
       }
 
+      function openCalendar() {
+        closeAllPanels();
+        openPanelEl = datePanel;
+        datePanel!.classList.add('open');
+        dateTrigger!.setAttribute('aria-expanded', 'true');
+        renderCalendar();
+      }
+
+      function closeAllPanels() {
+        openPanelEl = null;
+        countryPanel!.classList.remove('open');
+        datePanel!.classList.remove('open');
+        countryTrigger!.setAttribute('aria-expanded', 'false');
+        dateTrigger!.setAttribute('aria-expanded', 'false');
+      }
+
+      // ── Country search ──
       function filterCountryList(query: string) {
         const items = countryList!.querySelectorAll<HTMLElement>('.country-dropdown-item');
         const q = query.toLowerCase().trim();
@@ -318,14 +324,47 @@ const dateGroups = Object.entries(groupedByDate);
         });
       }
 
-      function filterDateList(query: string) {
-        const items = dateList!.querySelectorAll<HTMLElement>('.country-dropdown-item');
-        const q = query.toLowerCase().trim();
-        items.forEach(item => {
-          if (item.dataset.date === 'all') { item.style.display = ''; return; }
-          const name = item.querySelector('.country-dropdown-item-name')?.textContent?.toLowerCase() || '';
-          item.style.display = name.includes(q) ? '' : 'none';
-        });
+      // ── Calendar rendering ──
+      function pad(n: number): string { return n < 10 ? '0' + n : '' + n; }
+
+      function renderCalendar() {
+        const monthNames = ['January','February','March','April','May','June',
+                            'July','August','September','October','November','December'];
+        calMonthLabel!.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+        // First day of month (0=Sun, convert to Mon=0)
+        const firstDay = new Date(calYear, calMonth, 1).getDay();
+        const startOffset = (firstDay + 6) % 7; // Monday-based
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+        let html = '';
+
+        // Empty cells for offset
+        for (let i = 0; i < startOffset; i++) {
+          html += '<span class="cal-day cal-day-empty"></span>';
+        }
+
+        // Day cells
+        for (let d = 1; d <= daysInMonth; d++) {
+          const iso = `${calYear}-${pad(calMonth + 1)}-${pad(d)}`;
+          const count = articleDateCounts[iso] || 0;
+          const hasArticles = count > 0;
+          const isSelected = activeDate === iso;
+
+          let cls = 'cal-day';
+          if (!hasArticles) cls += ' cal-day-disabled';
+          if (hasArticles) cls += ' cal-day-has-articles';
+          if (isSelected) cls += ' cal-day-selected';
+
+          html += `<button class="${cls}" data-date="${iso}" ${!hasArticles ? 'disabled' : ''}>`;
+          html += `<span class="cal-day-num">${d}</span>`;
+          if (hasArticles) {
+            html += `<span class="cal-day-dot"></span>`;
+          }
+          html += `</button>`;
+        }
+
+        calGrid!.innerHTML = html;
       }
 
       // ── Unified filter logic ──
@@ -345,22 +384,18 @@ const dateGroups = Object.entries(groupedByDate);
           }
         });
 
-        // Hide empty date groups
-        dateGroups.forEach(group => {
+        sectionDateGroups.forEach(group => {
           const visible = group.querySelectorAll('.filterable-article:not(.filtered-hidden)');
           group.style.display = visible.length === 0 ? 'none' : '';
         });
 
-        // Hide hero if all hero articles hidden
         if (heroSection) {
           const visibleHero = heroSection.querySelectorAll('.filterable-article:not(.filtered-hidden)');
           heroSection.style.display = visibleHero.length === 0 ? 'none' : '';
         }
 
-        // Show/hide clear button
         clearBtn!.style.display = (activeCountry !== 'all' || activeDate !== 'all') ? '' : 'none';
 
-        // Update URL
         const url = new URL(window.location.href);
         activeCountry === 'all' ? url.searchParams.delete('country') : url.searchParams.set('country', activeCountry);
         activeDate === 'all' ? url.searchParams.delete('date') : url.searchParams.set('date', activeDate);
@@ -383,27 +418,21 @@ const dateGroups = Object.entries(groupedByDate);
           countryLabel!.textContent = country;
           countryTrigger!.classList.add('has-selection');
         }
-        closeAllDropdowns();
+        closeAllPanels();
         applyFilters();
       }
 
       function selectDate(dateKey: string) {
         activeDate = dateKey;
-        const items = dateList!.querySelectorAll<HTMLElement>('.country-dropdown-item');
-        items.forEach(item => {
-          const isActive = item.dataset.date === dateKey;
-          item.classList.toggle('active', isActive);
-          item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        });
         if (dateKey === 'all') {
           dateLabel!.textContent = 'Filter by Date';
           dateTrigger!.classList.remove('has-selection');
         } else {
-          const activeItem = Array.from(items).find(item => item.dataset.date === dateKey);
-          dateLabel!.textContent = activeItem?.querySelector('.country-dropdown-item-name')?.textContent || dateKey;
+          const d = new Date(dateKey + 'T12:00:00');
+          dateLabel!.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
           dateTrigger!.classList.add('has-selection');
         }
-        closeAllDropdowns();
+        closeAllPanels();
         applyFilters();
       }
 
@@ -412,12 +441,12 @@ const dateGroups = Object.entries(groupedByDate);
       // Country dropdown
       countryTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        openPanel === countryPanel ? closeAllDropdowns() : openDropdown(countryTrigger, countryPanel, countrySearch, filterCountryList);
+        openPanelEl === countryPanel ? closeAllPanels() : openCountryDropdown();
       });
       countrySearch.addEventListener('input', () => filterCountryList(countrySearch.value));
       countrySearch.addEventListener('click', (e) => e.stopPropagation());
       countrySearch.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeAllDropdowns(); countryTrigger.focus(); }
+        if (e.key === 'Escape') { closeAllPanels(); countryTrigger.focus(); }
         else if (e.key === 'Enter') {
           const visible = Array.from(countryList.querySelectorAll<HTMLElement>('.country-dropdown-item'))
             .filter(item => item.style.display !== 'none');
@@ -429,25 +458,40 @@ const dateGroups = Object.entries(groupedByDate);
         if (item?.dataset.country) selectCountry(item.dataset.country);
       });
 
-      // Date dropdown
+      // Calendar
       dateTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        openPanel === datePanel ? closeAllDropdowns() : openDropdown(dateTrigger, datePanel, dateSearch, filterDateList);
+        openPanelEl === datePanel ? closeAllPanels() : openCalendar();
       });
-      dateSearch.addEventListener('input', () => filterDateList(dateSearch.value));
-      dateSearch.addEventListener('click', (e) => e.stopPropagation());
-      dateSearch.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeAllDropdowns(); dateTrigger.focus(); }
-        else if (e.key === 'Enter') {
-          const visible = Array.from(dateList.querySelectorAll<HTMLElement>('.country-dropdown-item'))
-            .filter(item => item.style.display !== 'none');
-          if (visible.length > 0 && visible[0].dataset.date) selectDate(visible[0].dataset.date);
+
+      calPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        calMonth--;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        renderCalendar();
+      });
+
+      calNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        calMonth++;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        renderCalendar();
+      });
+
+      calGrid.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.cal-day:not(.cal-day-disabled)');
+        if (btn?.dataset.date) {
+          selectDate(btn.dataset.date);
         }
       });
-      dateList.addEventListener('click', (e) => {
-        const item = (e.target as HTMLElement).closest<HTMLElement>('.country-dropdown-item');
-        if (item?.dataset.date) selectDate(item.dataset.date);
+
+      calToday.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectDate('all');
       });
+
+      // Prevent panel clicks from bubbling
+      datePanel.addEventListener('click', (e) => e.stopPropagation());
 
       // Clear all filters
       clearBtn.addEventListener('click', () => {
@@ -457,14 +501,14 @@ const dateGroups = Object.entries(groupedByDate);
 
       // Close on outside click
       document.addEventListener('click', (e) => {
-        if (openPanel && !(e.target as HTMLElement).closest('#country-dropdown') && !(e.target as HTMLElement).closest('#date-dropdown')) {
-          closeAllDropdowns();
+        if (openPanelEl && !(e.target as HTMLElement).closest('#country-dropdown') && !(e.target as HTMLElement).closest('#date-dropdown')) {
+          closeAllPanels();
         }
       });
 
       // Close on Escape
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && openPanel) closeAllDropdowns();
+        if (e.key === 'Escape' && openPanelEl) closeAllPanels();
       });
 
       // ── Read URL params on load ──
@@ -476,10 +520,12 @@ const dateGroups = Object.entries(groupedByDate);
           .find(item => item.dataset.country === urlCountry);
         if (match) selectCountry(urlCountry);
       }
-      if (urlDate) {
-        const match = Array.from(dateList.querySelectorAll<HTMLElement>('.country-dropdown-item'))
-          .find(item => item.dataset.date === urlDate);
-        if (match) selectDate(urlDate);
+      if (urlDate && articleDateCounts[urlDate]) {
+        // Navigate calendar to that month
+        const [y, m] = urlDate.split('-').map(Number);
+        calYear = y;
+        calMonth = m - 1;
+        selectDate(urlDate);
       }
     });
   </script>
