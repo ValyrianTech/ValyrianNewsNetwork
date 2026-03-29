@@ -285,6 +285,26 @@ const dateGroups = Object.entries(groupedByDate);
         }
 
         closeDropdown();
+
+        // Update URL
+        const url = new URL(window.location.href);
+        if (country === 'all') {
+          url.searchParams.delete('country');
+        } else {
+          url.searchParams.set('country', country);
+        }
+        window.history.replaceState({}, '', url.toString());
+      }
+
+      // Read country from URL on load
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCountry = urlParams.get('country');
+      if (urlCountry) {
+        const items = list.querySelectorAll<HTMLElement>('.country-dropdown-item');
+        const match = Array.from(items).find(item => item.dataset.country === urlCountry);
+        if (match) {
+          selectCountry(urlCountry);
+        }
       }
 
       // Toggle dropdown
