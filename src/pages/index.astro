@@ -5,7 +5,13 @@ import ArticleCard from '../components/ArticleCard.astro';
 import { getCountries } from '../utils/countries';
 
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
-const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const allSorted = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Limit to last 7 days
+const now = new Date();
+const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+const sortedPosts = allSorted.filter(post => post.data.date >= sevenDaysAgo);
+
 const featuredPost = sortedPosts[0];
 const secondaryPosts = sortedPosts.slice(1, 4);
 const remainingPosts = sortedPosts.slice(4);
@@ -119,6 +125,15 @@ const dateGroups = Object.entries(groupedByDate);
               </button>
               
               <div class="country-dropdown-panel" id="date-panel" role="listbox" aria-label="Filter articles by date">
+                <div class="country-dropdown-search-wrap">
+                  <input 
+                    type="text" 
+                    class="country-dropdown-search" 
+                    id="date-search" 
+                    placeholder="Search dates…"
+                    autocomplete="off"
+                  />
+                </div>
                 <div class="country-dropdown-list" id="date-list">
                   <button class="country-dropdown-item active" data-date="all" role="option" aria-selected="true">
                     <span class="country-dropdown-item-name">All Dates</span>
@@ -262,11 +277,12 @@ const dateGroups = Object.entries(groupedByDate);
       // Date dropdown elements
       const dateTrigger = document.getElementById('date-trigger') as HTMLButtonElement | null;
       const datePanel = document.getElementById('date-panel') as HTMLElement | null;
+      const dateSearch = document.getElementById('date-search') as HTMLInputElement | null;
       const dateList = document.getElementById('date-list') as HTMLElement | null;
       const dateLabel = document.getElementById('date-label') as HTMLElement | null;
 
       if (!countryTrigger || !countryPanel || !countrySearch || !countryList || !countryLabel ||
-          !dateTrigger || !datePanel || !dateList || !dateLabel || !clearBtn) return;
+          !dateTrigger || !datePanel || !dateSearch || !dateList || !dateLabel || !clearBtn) return;
 
       // State
       let activeCountry = 'all';
@@ -274,14 +290,14 @@ const dateGroups = Object.entries(groupedByDate);
       let openPanel: HTMLElement | null = null;
 
       // ── Dropdown helpers ──
-      function openDropdown(trigger: HTMLButtonElement, panel: HTMLElement, searchEl?: HTMLInputElement) {
+      function openDropdown(trigger: HTMLButtonElement, panel: HTMLElement, searchEl?: HTMLInputElement, filterFn?: (q: string) => void) {
         closeAllDropdowns();
         openPanel = panel;
         panel.classList.add('open');
         trigger.setAttribute('aria-expanded', 'true');
-        if (searchEl) {
+        if (searchEl && filterFn) {
           searchEl.value = '';
-          filterCountryList('');
+          filterFn('');
           setTimeout(() => searchEl.focus(), 50);
         }
       }
@@ -297,6 +313,16 @@ const dateGroups = Object.entries(groupedByDate);
         const q = query.toLowerCase().trim();
         items.forEach(item => {
           if (item.dataset.country === 'all') { item.style.display = ''; return; }
+          const name = item.querySelector('.country-dropdown-item-name')?.textContent?.toLowerCase() || '';
+          item.style.display = name.includes(q) ? '' : 'none';
+        });
+      }
+
+      function filterDateList(query: string) {
+        const items = dateList!.querySelectorAll<HTMLElement>('.country-dropdown-item');
+        const q = query.toLowerCase().trim();
+        items.forEach(item => {
+          if (item.dataset.date === 'all') { item.style.display = ''; return; }
           const name = item.querySelector('.country-dropdown-item-name')?.textContent?.toLowerCase() || '';
           item.style.display = name.includes(q) ? '' : 'none';
         });
@@ -386,7 +412,7 @@ const dateGroups = Object.entries(groupedByDate);
       // Country dropdown
       countryTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        openPanel === countryPanel ? closeAllDropdowns() : openDropdown(countryTrigger, countryPanel, countrySearch);
+        openPanel === countryPanel ? closeAllDropdowns() : openDropdown(countryTrigger, countryPanel, countrySearch, filterCountryList);
       });
       countrySearch.addEventListener('input', () => filterCountryList(countrySearch.value));
       countrySearch.addEventListener('click', (e) => e.stopPropagation());
@@ -406,7 +432,17 @@ const dateGroups = Object.entries(groupedByDate);
       // Date dropdown
       dateTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        openPanel === datePanel ? closeAllDropdowns() : openDropdown(dateTrigger, datePanel);
+        openPanel === datePanel ? closeAllDropdowns() : openDropdown(dateTrigger, datePanel, dateSearch, filterDateList);
+      });
+      dateSearch.addEventListener('input', () => filterDateList(dateSearch.value));
+      dateSearch.addEventListener('click', (e) => e.stopPropagation());
+      dateSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { closeAllDropdowns(); dateTrigger.focus(); }
+        else if (e.key === 'Enter') {
+          const visible = Array.from(dateList.querySelectorAll<HTMLElement>('.country-dropdown-item'))
+            .filter(item => item.style.display !== 'none');
+          if (visible.length > 0 && visible[0].dataset.date) selectDate(visible[0].dataset.date);
+        }
       });
       dateList.addEventListener('click', (e) => {
         const item = (e.target as HTMLElement).closest<HTMLElement>('.country-dropdown-item');
