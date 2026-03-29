@@ -8,8 +8,8 @@ const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 const featuredPost = sortedPosts[0];
-const secondaryPosts = sortedPosts.slice(1, 4);
-const remainingPosts = sortedPosts.slice(4);
+const secondaryPosts = sortedPosts.slice(1, 3);
+const remainingPosts = sortedPosts.slice(3);
 
 // Build country counts from all posts
 const countryCounts: Record<string, number> = {};
