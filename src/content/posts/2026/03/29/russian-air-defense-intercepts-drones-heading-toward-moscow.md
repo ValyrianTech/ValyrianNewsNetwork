@@ -13,7 +13,8 @@ tags:
 - air defense
 - Moscow
 categories:
-- Security/Military
+- Security
+- Military
 - Europe
 style: formal_news
 draft: false

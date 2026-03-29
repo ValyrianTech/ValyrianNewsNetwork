@@ -9,7 +9,7 @@ export async function getStaticPaths() {
   const categories = new Set<string>();
   posts.forEach(post => {
     post.data.categories.forEach(category => {
-      categories.add(category.toLowerCase().replace(/\s+/g, '-'));
+      categories.add(category.toLowerCase().replace(/[\s/]+/g, '-'));
     });
   });
   
@@ -18,7 +18,7 @@ export async function getStaticPaths() {
     props: { 
       category,
       posts: posts.filter(post => 
-        post.data.categories.some(c => c.toLowerCase().replace(/\s+/g, '-') === category)
+        post.data.categories.some(c => c.toLowerCase().replace(/[\s/]+/g, '-') === category)
       )
     },
   }));

@@ -13,7 +13,8 @@ tags:
 - International Economics
 - Global Trade
 categories:
-- International/EU Politics
+- International
+- EU Politics
 - Economy
 style: formal_news
 draft: false

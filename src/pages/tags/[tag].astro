@@ -9,7 +9,7 @@ export async function getStaticPaths() {
   const tags = new Set<string>();
   posts.forEach(post => {
     post.data.tags.forEach(tag => {
-      tags.add(tag.toLowerCase().replace(/\s+/g, '-'));
+      tags.add(tag.toLowerCase().replace(/[\s/]+/g, '-'));
     });
   });
   
@@ -18,7 +18,7 @@ export async function getStaticPaths() {
     props: { 
       tag,
       posts: posts.filter(post => 
-        post.data.tags.some(t => t.toLowerCase().replace(/\s+/g, '-') === tag)
+        post.data.tags.some(t => t.toLowerCase().replace(/[\s/]+/g, '-') === tag)
       )
     },
   }));
