@@ -3,11 +3,48 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 
+const COUNTRY_TAGS: Record<string, string> = {
+  'netherlands': 'Netherlands',
+  'belgium': 'Belgium',
+  'france': 'France',
+  'germany': 'Germany',
+  'uk': 'UK',
+  'uk news': 'UK',
+  'uk politics': 'UK',
+  'russia': 'Russia',
+  'ukraine': 'Ukraine',
+  'china': 'China',
+  'iran': 'Iran',
+  'israel': 'Israel',
+  'yemen': 'Yemen',
+  'us': 'US',
+  'japan': 'Japan',
+};
+
+function getCountries(tags: string[]): string[] {
+  const countries = new Set<string>();
+  for (const tag of tags) {
+    const match = COUNTRY_TAGS[tag.toLowerCase()];
+    if (match) countries.add(match);
+  }
+  return Array.from(countries);
+}
+
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 const featuredPost = sortedPosts[0];
 const secondaryPosts = sortedPosts.slice(1, 4);
 const remainingPosts = sortedPosts.slice(4);
+
+// Build country counts from all posts
+const countryCounts: Record<string, number> = {};
+for (const post of sortedPosts) {
+  for (const country of getCountries(post.data.tags)) {
+    countryCounts[country] = (countryCounts[country] || 0) + 1;
+  }
+}
+const activeCountries = Object.entries(countryCounts)
+  .sort((a, b) => b[1] - a[1]);
 
 // Group remaining posts by date
 const groupedByDate = remainingPosts.reduce((groups: Record<string, typeof remainingPosts>, post) => {
@@ -39,13 +76,35 @@ const dateGroups = Object.entries(groupedByDate);
     ) : (
       <div class="max-w-7xl mx-auto px-6">
         
+        <!-- Country Filter Bar -->
+        {activeCountries.length > 0 && (
+          <nav class="py-5 animate-fade-in-up" id="country-filter">
+            <div class="flex flex-wrap items-center gap-2">
+              <button 
+                class="country-btn active"
+                data-country="all"
+              >
+                All
+              </button>
+              {activeCountries.map(([country, count]) => (
+                <button 
+                  class="country-btn"
+                  data-country={country}
+                >
+                  {country} <span class="country-count">{count}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
+        )}
+        
         <!-- Hero Section: Featured + Secondary -->
-        <section class="py-8 animate-fade-in-up">
+        <section class="py-8 animate-fade-in-up" id="hero-section">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 items-start">
             
             <!-- Featured Story (left, dominant) -->
             {featuredPost && (
-              <div class="lg:col-span-7 lg:pr-10 lg:border-r border-vnn-rule pb-6 lg:pb-0">
+              <div class="lg:col-span-7 lg:pr-10 lg:border-r border-vnn-rule pb-6 lg:pb-0 filterable-article" data-countries={getCountries(featuredPost.data.tags).join(',')}>
                 <ArticleCard
                   title={featuredPost.data.title}
                   slug={featuredPost.data.slug}
@@ -62,7 +121,7 @@ const dateGroups = Object.entries(groupedByDate);
             {secondaryPosts.length > 0 && (
               <div class="lg:col-span-5 lg:pl-10 flex flex-col">
                 {secondaryPosts.map((post, i) => (
-                  <div class={`animate-fade-in-up stagger-${i + 1} ${i > 0 ? 'pt-8 mt-8 hairline-top' : ''}`}>
+                  <div class={`animate-fade-in-up stagger-${i + 1} ${i > 0 ? 'pt-8 mt-8 hairline-top' : ''} filterable-article`} data-countries={getCountries(post.data.tags).join(',')}>
                     <ArticleCard
                       title={post.data.title}
                       slug={post.data.slug}
@@ -82,9 +141,9 @@ const dateGroups = Object.entries(groupedByDate);
 
         <!-- Date-Grouped Article Sections -->
         {dateGroups.map(([dateLabel, posts], groupIndex) => (
-          <section class={`animate-fade-in-up stagger-${Math.min(groupIndex + 2, 6)}`}>
+          <section class={`date-group animate-fade-in-up stagger-${Math.min(groupIndex + 2, 6)}`}>
             <!-- Edition Date Header -->
-            <div class="flex items-center gap-6 py-4 mt-4">
+            <div class="flex items-center gap-6 py-4 mt-4 date-group-header">
               <div class="h-px bg-vnn-rule flex-1"></div>
               <h2 class="edition-date shrink-0 m-0">{dateLabel}</h2>
               <div class="h-px bg-vnn-rule flex-1"></div>
@@ -93,7 +152,7 @@ const dateGroups = Object.entries(groupedByDate);
             <!-- Articles Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 py-8">
               {posts.map((post: typeof remainingPosts[0]) => (
-                <div class="hairline-top pt-6">
+                <div class="hairline-top pt-6 filterable-article" data-countries={getCountries(post.data.tags).join(',')}>
                   <ArticleCard
                     title={post.data.title}
                     slug={post.data.slug}
@@ -132,4 +191,57 @@ const dateGroups = Object.entries(groupedByDate);
       </div>
     )}
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const buttons = document.querySelectorAll<HTMLButtonElement>('.country-btn');
+      const articles = document.querySelectorAll<HTMLElement>('.filterable-article');
+      const dateGroups = document.querySelectorAll<HTMLElement>('.date-group');
+      const heroSection = document.getElementById('hero-section');
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const country = btn.dataset.country;
+          
+          // Update active button
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          if (country === 'all') {
+            // Show everything
+            articles.forEach(a => {
+              a.style.display = '';
+              a.classList.remove('filtered-hidden');
+            });
+            dateGroups.forEach(g => g.style.display = '');
+            if (heroSection) heroSection.style.display = '';
+          } else {
+            // Filter articles
+            articles.forEach(a => {
+              const countries = (a.dataset.countries || '').split(',');
+              if (countries.includes(country!)) {
+                a.style.display = '';
+                a.classList.remove('filtered-hidden');
+              } else {
+                a.style.display = 'none';
+                a.classList.add('filtered-hidden');
+              }
+            });
+
+            // Hide date groups where all articles are hidden
+            dateGroups.forEach(group => {
+              const visible = group.querySelectorAll('.filterable-article:not(.filtered-hidden)');
+              group.style.display = visible.length === 0 ? 'none' : '';
+            });
+
+            // Hide hero section if all hero articles hidden
+            if (heroSection) {
+              const visibleHero = heroSection.querySelectorAll('.filterable-article:not(.filtered-hidden)');
+              heroSection.style.display = visibleHero.length === 0 ? 'none' : '';
+            }
+          }
+        });
+      });
+    });
+  </script>
 </BaseLayout>
