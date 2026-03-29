@@ -44,7 +44,7 @@ for (const post of sortedPosts) {
   }
 }
 const activeCountries = Object.entries(countryCounts)
-  .sort((a, b) => b[1] - a[1]);
+  .sort((a, b) => a[0].localeCompare(b[0]));
 
 // Group remaining posts by date
 const groupedByDate = remainingPosts.reduce((groups: Record<string, typeof remainingPosts>, post) => {
@@ -76,25 +76,45 @@ const dateGroups = Object.entries(groupedByDate);
     ) : (
       <div class="max-w-7xl mx-auto px-6">
         
-        <!-- Country Filter Bar -->
+        <!-- Country Filter -->
         {activeCountries.length > 0 && (
-          <nav class="py-5 animate-fade-in-up" id="country-filter">
-            <div class="flex flex-wrap items-center gap-2">
-              <button 
-                class="country-btn active"
-                data-country="all"
-              >
-                All
+          <nav class="py-4 animate-fade-in-up" id="country-filter">
+            <div class="relative inline-block" id="country-dropdown">
+              <button class="country-dropdown-trigger" id="country-trigger" aria-expanded="false" aria-haspopup="listbox">
+                <span class="country-dropdown-label">Filter by Country</span>
+                <svg class="country-dropdown-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </button>
-              {activeCountries.map(([country, count]) => (
-                <button 
-                  class="country-btn"
-                  data-country={country}
-                >
-                  {country} <span class="country-count">{count}</span>
-                </button>
-              ))}
+              
+              <div class="country-dropdown-panel" id="country-panel" role="listbox" aria-label="Filter articles by country">
+                <div class="country-dropdown-search-wrap">
+                  <input 
+                    type="text" 
+                    class="country-dropdown-search" 
+                    id="country-search" 
+                    placeholder="Search countries…"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="country-dropdown-list" id="country-list">
+                  <button class="country-dropdown-item active" data-country="all" role="option" aria-selected="true">
+                    <span class="country-dropdown-item-name">All Countries</span>
+                    <span class="country-dropdown-item-count">{sortedPosts.length}</span>
+                  </button>
+                  {activeCountries.map(([country, count]) => (
+                    <button class="country-dropdown-item" data-country={country} role="option" aria-selected="false">
+                      <span class="country-dropdown-item-name">{country}</span>
+                      <span class="country-dropdown-item-count">{count}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            <button class="country-clear-btn" id="country-clear" style="display: none;">
+              ✕ Clear filter
+            </button>
           </nav>
         )}
         
@@ -194,53 +214,151 @@ const dateGroups = Object.entries(groupedByDate);
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const buttons = document.querySelectorAll<HTMLButtonElement>('.country-btn');
+      const trigger = document.getElementById('country-trigger') as HTMLButtonElement | null;
+      const panel = document.getElementById('country-panel') as HTMLElement | null;
+      const search = document.getElementById('country-search') as HTMLInputElement | null;
+      const list = document.getElementById('country-list') as HTMLElement | null;
+      const clearBtn = document.getElementById('country-clear') as HTMLButtonElement | null;
+      const label = trigger?.querySelector('.country-dropdown-label') as HTMLElement | null;
       const articles = document.querySelectorAll<HTMLElement>('.filterable-article');
       const dateGroups = document.querySelectorAll<HTMLElement>('.date-group');
       const heroSection = document.getElementById('hero-section');
+      
+      if (!trigger || !panel || !search || !list || !clearBtn || !label) return;
 
-      buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const country = btn.dataset.country;
-          
-          // Update active button
-          buttons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
+      let isOpen = false;
+      let activeCountry = 'all';
 
-          if (country === 'all') {
-            // Show everything
-            articles.forEach(a => {
+      function openDropdown() {
+        isOpen = true;
+        panel!.classList.add('open');
+        trigger!.setAttribute('aria-expanded', 'true');
+        search!.value = '';
+        filterList('');
+        setTimeout(() => search!.focus(), 50);
+      }
+
+      function closeDropdown() {
+        isOpen = false;
+        panel!.classList.remove('open');
+        trigger!.setAttribute('aria-expanded', 'false');
+      }
+
+      function filterList(query: string) {
+        const items = list!.querySelectorAll<HTMLElement>('.country-dropdown-item');
+        const q = query.toLowerCase().trim();
+        items.forEach(item => {
+          if (item.dataset.country === 'all') {
+            item.style.display = '';
+            return;
+          }
+          const name = item.querySelector('.country-dropdown-item-name')?.textContent?.toLowerCase() || '';
+          item.style.display = name.includes(q) ? '' : 'none';
+        });
+      }
+
+      function selectCountry(country: string) {
+        activeCountry = country;
+        
+        // Update active item styling
+        const items = list!.querySelectorAll<HTMLElement>('.country-dropdown-item');
+        items.forEach(item => {
+          const isActive = item.dataset.country === country;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        // Update trigger label
+        if (country === 'all') {
+          label!.textContent = 'Filter by Country';
+          trigger!.classList.remove('has-selection');
+          clearBtn!.style.display = 'none';
+        } else {
+          label!.textContent = country;
+          trigger!.classList.add('has-selection');
+          clearBtn!.style.display = '';
+        }
+
+        // Filter articles
+        if (country === 'all') {
+          articles.forEach(a => {
+            a.style.display = '';
+            a.classList.remove('filtered-hidden');
+          });
+          dateGroups.forEach(g => g.style.display = '');
+          if (heroSection) heroSection.style.display = '';
+        } else {
+          articles.forEach(a => {
+            const countries = (a.dataset.countries || '').split(',');
+            if (countries.includes(country)) {
               a.style.display = '';
               a.classList.remove('filtered-hidden');
-            });
-            dateGroups.forEach(g => g.style.display = '');
-            if (heroSection) heroSection.style.display = '';
-          } else {
-            // Filter articles
-            articles.forEach(a => {
-              const countries = (a.dataset.countries || '').split(',');
-              if (countries.includes(country!)) {
-                a.style.display = '';
-                a.classList.remove('filtered-hidden');
-              } else {
-                a.style.display = 'none';
-                a.classList.add('filtered-hidden');
-              }
-            });
-
-            // Hide date groups where all articles are hidden
-            dateGroups.forEach(group => {
-              const visible = group.querySelectorAll('.filterable-article:not(.filtered-hidden)');
-              group.style.display = visible.length === 0 ? 'none' : '';
-            });
-
-            // Hide hero section if all hero articles hidden
-            if (heroSection) {
-              const visibleHero = heroSection.querySelectorAll('.filterable-article:not(.filtered-hidden)');
-              heroSection.style.display = visibleHero.length === 0 ? 'none' : '';
+            } else {
+              a.style.display = 'none';
+              a.classList.add('filtered-hidden');
             }
+          });
+
+          dateGroups.forEach(group => {
+            const visible = group.querySelectorAll('.filterable-article:not(.filtered-hidden)');
+            group.style.display = visible.length === 0 ? 'none' : '';
+          });
+
+          if (heroSection) {
+            const visibleHero = heroSection.querySelectorAll('.filterable-article:not(.filtered-hidden)');
+            heroSection.style.display = visibleHero.length === 0 ? 'none' : '';
           }
-        });
+        }
+
+        closeDropdown();
+      }
+
+      // Toggle dropdown
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isOpen ? closeDropdown() : openDropdown();
+      });
+
+      // Search input
+      search.addEventListener('input', () => filterList(search.value));
+      search.addEventListener('click', (e) => e.stopPropagation());
+
+      // Keyboard navigation
+      search.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeDropdown();
+          trigger.focus();
+        } else if (e.key === 'Enter') {
+          const visibleItems = Array.from(list.querySelectorAll<HTMLElement>('.country-dropdown-item'))
+            .filter(item => item.style.display !== 'none');
+          if (visibleItems.length > 0) {
+            const country = visibleItems[0].dataset.country;
+            if (country) selectCountry(country);
+          }
+        }
+      });
+
+      // Item click
+      list.addEventListener('click', (e) => {
+        const item = (e.target as HTMLElement).closest<HTMLElement>('.country-dropdown-item');
+        if (item?.dataset.country) {
+          selectCountry(item.dataset.country);
+        }
+      });
+
+      // Clear button
+      clearBtn.addEventListener('click', () => selectCountry('all'));
+
+      // Close on outside click
+      document.addEventListener('click', (e) => {
+        if (isOpen && !(e.target as HTMLElement).closest('#country-dropdown')) {
+          closeDropdown();
+        }
+      });
+
+      // Close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) closeDropdown();
       });
     });
   </script>
