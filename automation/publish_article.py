@@ -214,9 +214,9 @@ def main():
         help='Path to the article markdown file'
     )
     parser.add_argument(
-        '--commit',
+        '--no-commit',
         action='store_true',
-        help='Commit the published article to git'
+        help='Skip committing the published article to git'
     )
     parser.add_argument(
         '--dest',
@@ -243,7 +243,7 @@ def main():
         published_path = publish_article(
             source_path=args.article_path,
             dest_dir=dest_dir,
-            commit=args.commit,
+            commit=not args.no_commit,
             repo_root=repo_root
         )
         print(f"\n🎉 Successfully published article!")
