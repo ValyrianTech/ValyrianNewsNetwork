@@ -33,6 +33,13 @@ VNN is a static news website that publishes AI-generated articles with complete 
 
 ## Commands
 
+This project requires **Node.js >=22.12.0**. Use nvm to switch versions:
+
+```bash
+nvm use 22
+npm run dev
+```
+
 | Command           | Action                                      |
 | :---------------- | :------------------------------------------ |
 | `npm install`     | Install dependencies                        |
