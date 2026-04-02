@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PushNotifications from '../components/PushNotifications.astro';
+---
+
+<BaseLayout title="Push Notifications" description="Subscribe to push notifications for new VNN articles about countries you care about.">
+  <div class="max-w-3xl mx-auto px-6 py-12">
+    <header class="mb-12 animate-fade-in-up">
+      <p class="font-mono text-xs uppercase tracking-[0.2em] text-vnn-muted mb-4">Stay Informed</p>
+      <h1 class="font-display text-4xl md:text-5xl font-black text-vnn-ink mb-4 tracking-tight leading-[1.1]">
+        Push Notifications
+      </h1>
+      <p class="text-xl text-vnn-gray font-body">
+        Get notified when new articles are published
+      </p>
+    </header>
+    
+    <div class="prose prose-lg max-w-none space-y-10">
+      <section>
+        <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">How It Works</h2>
+        <p class="text-vnn-charcoal leading-relaxed mb-4">
+          As a Patreon supporter, you can receive instant push notifications when we publish new articles about the countries you care about most.
+        </p>
+        <div class="space-y-4">
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-vnn-vermillion text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
+            <div>
+              <h3 class="font-bold text-vnn-charcoal mb-1">Connect Your Patreon</h3>
+              <p class="text-vnn-gray text-sm">Sign in with your Patreon account to verify your membership.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-vnn-vermillion text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
+            <div>
+              <h3 class="font-bold text-vnn-charcoal mb-1">Choose Your Countries</h3>
+              <p class="text-vnn-gray text-sm">Select which countries you want to receive notifications about.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-vnn-vermillion text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
+            <div>
+              <h3 class="font-bold text-vnn-charcoal mb-1">Stay Informed</h3>
+              <p class="text-vnn-gray text-sm">Receive a notification whenever we publish an article matching your interests.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section>
+        <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">Subscribe</h2>
+        <PushNotifications />
+      </section>
+      
+      <section>
+        <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">Requirements</h2>
+        <ul class="text-vnn-gray space-y-2 ml-4">
+          <li>• <strong>Patreon membership:</strong> Any paid tier (not free)</li>
+          <li>• <strong>Browser support:</strong> Chrome, Firefox, Edge, or Safari 16+</li>
+          <li>• <strong>Notifications enabled:</strong> You'll be prompted to allow notifications</li>
+        </ul>
+      </section>
+      
+      <section>
+        <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">Privacy</h2>
+        <p class="text-vnn-charcoal leading-relaxed">
+          We only store the minimum data needed to send you notifications: your push subscription endpoint, your selected countries, and your Patreon user ID. We never share this data with third parties. You can unsubscribe at any time, and we'll delete your data within 30 days. See our <a href="/privacy" class="text-vnn-vermillion">Privacy Policy</a> for details.
+        </p>
+      </section>
+      
+      <footer class="text-center text-vnn-gray text-sm pt-8 hairline-top">
+        <a href="/" class="text-vnn-vermillion hover:underline">← Back to Home</a>
+      </footer>
+    </div>
+  </div>
+</BaseLayout>
