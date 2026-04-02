@@ -26,6 +26,11 @@ from pathlib import Path
 
 import requests
 import yaml
+from dotenv import load_dotenv
+
+# Load .env file from automation directory or repo root
+load_dotenv(Path(__file__).parent / '.env')
+load_dotenv(Path(__file__).parent.parent / '.env')
 
 
 def parse_front_matter(content: str) -> tuple[dict, str]:
