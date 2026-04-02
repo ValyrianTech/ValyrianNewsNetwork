@@ -16,6 +16,7 @@ Example:
 """
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -23,6 +24,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import requests
 import yaml
 
 
@@ -202,6 +204,72 @@ def publish_article(
     return dest_path
 
 
+def extract_countries(tags: list[str]) -> list[str]:
+    """Extract country names from tags."""
+    COUNTRY_TAGS = {
+        'usa': 'United States', 'united states': 'United States', 'america': 'United States',
+        'uk': 'United Kingdom', 'united kingdom': 'United Kingdom', 'britain': 'United Kingdom',
+        'china': 'China', 'russia': 'Russia', 'germany': 'Germany', 'france': 'France',
+        'japan': 'Japan', 'india': 'India', 'brazil': 'Brazil', 'canada': 'Canada',
+        'australia': 'Australia', 'italy': 'Italy', 'spain': 'Spain', 'mexico': 'Mexico',
+        'south korea': 'South Korea', 'korea': 'South Korea', 'netherlands': 'Netherlands',
+        'switzerland': 'Switzerland', 'sweden': 'Sweden', 'poland': 'Poland',
+        'belgium': 'Belgium', 'austria': 'Austria', 'norway': 'Norway', 'denmark': 'Denmark',
+        'finland': 'Finland', 'ireland': 'Ireland', 'portugal': 'Portugal', 'greece': 'Greece',
+        'czech republic': 'Czech Republic', 'romania': 'Romania', 'hungary': 'Hungary',
+        'israel': 'Israel', 'saudi arabia': 'Saudi Arabia', 'uae': 'UAE',
+        'united arab emirates': 'UAE', 'turkey': 'Turkey', 'egypt': 'Egypt',
+        'south africa': 'South Africa', 'nigeria': 'Nigeria', 'kenya': 'Kenya',
+        'indonesia': 'Indonesia', 'thailand': 'Thailand', 'vietnam': 'Vietnam',
+        'philippines': 'Philippines', 'malaysia': 'Malaysia', 'singapore': 'Singapore',
+        'taiwan': 'Taiwan', 'hong kong': 'Hong Kong', 'pakistan': 'Pakistan',
+        'bangladesh': 'Bangladesh', 'iran': 'Iran', 'iraq': 'Iraq', 'ukraine': 'Ukraine',
+        'argentina': 'Argentina', 'chile': 'Chile', 'colombia': 'Colombia', 'peru': 'Peru',
+        'venezuela': 'Venezuela', 'new zealand': 'New Zealand',
+    }
+    countries = set()
+    for tag in tags:
+        match = COUNTRY_TAGS.get(tag.lower())
+        if match:
+            countries.add(match)
+    return list(countries)
+
+
+def send_push_notifications(front_matter: dict) -> None:
+    """Send push notifications to subscribers."""
+    api_key = os.environ.get('VNN_PUSH_API_KEY')
+    if not api_key:
+        print("⚠️  VNN_PUSH_API_KEY not set, skipping push notifications")
+        return
+    
+    worker_url = os.environ.get('VNN_PUSH_WORKER_URL', 'https://vnn-push.valyriannewsnetwork.workers.dev')
+    
+    countries = extract_countries(front_matter.get('tags', []))
+    if not countries:
+        print("ℹ️  No country tags found, skipping push notifications")
+        return
+    
+    payload = {
+        'title': front_matter['title'],
+        'description': front_matter['meta_description'],
+        'url': f"https://valyrian-news-network.github.io/posts/{front_matter['slug']}",
+        'countries': countries,
+    }
+    
+    try:
+        response = requests.post(
+            f"{worker_url}/send",
+            json=payload,
+            headers={'Authorization': f'Bearer {api_key}'},
+            timeout=30,
+        )
+        response.raise_for_status()
+        result = response.json()
+        print(f"🔔 Push notifications: {result.get('message', 'sent')}")
+    except requests.RequestException as e:
+        print(f"⚠️  Failed to send push notifications: {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Publish an article to the VNN website',
@@ -223,6 +291,11 @@ def main():
         type=Path,
         default=None,
         help='Destination directory (default: auto-detect from script location)'
+    )
+    parser.add_argument(
+        '--no-notify',
+        action='store_true',
+        help='Skip sending push notifications'
     )
     
     args = parser.parse_args()
@@ -248,6 +321,12 @@ def main():
         )
         print(f"\n🎉 Successfully published article!")
         print(f"   Location: {published_path}")
+        
+        # Send push notifications
+        if not args.no_notify:
+            content = args.article_path.read_text(encoding='utf-8')
+            front_matter, _ = parse_front_matter(content)
+            send_push_notifications(front_matter)
     except Exception as e:
         print(f"\n❌ Failed to publish article: {e}")
         sys.exit(1)

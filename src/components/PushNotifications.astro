@@ -1,0 +1,398 @@
+---
+/**
+ * Push Notification Subscription Component
+ * 
+ * Allows Patreon supporters to subscribe to push notifications
+ * for new articles about specific countries.
+ */
+
+import { getCountries } from '../utils/countries';
+import { getCollection } from 'astro:content';
+
+// Get all unique countries from published articles
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const allTags = allPosts.flatMap(post => post.data.tags);
+const countries = [...new Set(getCountries(allTags))].sort();
+
+const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
+---
+
+<div id="push-notifications" class="push-notifications">
+  <!-- Initial state: Check authentication -->
+  <div id="push-loading" class="push-section">
+    <p class="text-vnn-muted text-sm">Loading notification settings...</p>
+  </div>
+
+  <!-- Not authenticated: Show Patreon login -->
+  <div id="push-login" class="push-section" style="display: none;">
+    <div class="flex items-start gap-4">
+      <div class="flex-1">
+        <h4 class="font-display text-lg font-bold text-vnn-ink mb-2">Get Notified</h4>
+        <p class="text-vnn-gray text-sm mb-3">
+          Patreon supporters can receive push notifications when new articles are published about countries they care about.
+        </p>
+        <button id="push-patreon-btn" class="push-btn push-btn-primary">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.386.524c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 4.4 20.136.524 15.386.524M.003 23.537h4.22V.524H.003"/>
+          </svg>
+          Connect with Patreon
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authenticated but not subscribed: Show subscription form -->
+  <div id="push-subscribe" class="push-section" style="display: none;">
+    <h4 class="font-display text-lg font-bold text-vnn-ink mb-2">Subscribe to Notifications</h4>
+    <p class="text-vnn-gray text-sm mb-4">
+      Select the countries you want to receive notifications about:
+    </p>
+    
+    <div id="push-countries" class="push-countries">
+      {countries.map(country => (
+        <label class="push-country-label">
+          <input type="checkbox" name="country" value={country} class="push-country-checkbox" />
+          <span>{country}</span>
+        </label>
+      ))}
+    </div>
+    
+    <div class="flex items-center gap-3 mt-4">
+      <button id="push-subscribe-btn" class="push-btn push-btn-primary" disabled>
+        Enable Notifications
+      </button>
+      <button id="push-logout-btn" class="push-btn push-btn-secondary">
+        Disconnect
+      </button>
+    </div>
+    <p id="push-subscribe-error" class="text-red-600 text-sm mt-2" style="display: none;"></p>
+  </div>
+
+  <!-- Subscribed: Show current subscription -->
+  <div id="push-subscribed" class="push-section" style="display: none;">
+    <h4 class="font-display text-lg font-bold text-vnn-ink mb-2">
+      <span class="text-green-600">✓</span> Notifications Enabled
+    </h4>
+    <p class="text-vnn-gray text-sm mb-3">
+      You'll receive notifications for articles about:
+    </p>
+    <div id="push-current-countries" class="flex flex-wrap gap-2 mb-4"></div>
+    <div class="flex items-center gap-3">
+      <button id="push-edit-btn" class="push-btn push-btn-secondary">
+        Edit Preferences
+      </button>
+      <button id="push-unsubscribe-btn" class="push-btn push-btn-danger">
+        Unsubscribe
+      </button>
+    </div>
+  </div>
+
+  <!-- Browser doesn't support push -->
+  <div id="push-unsupported" class="push-section" style="display: none;">
+    <p class="text-vnn-muted text-sm">
+      Push notifications are not supported in your browser.
+    </p>
+  </div>
+</div>
+
+<style>
+  .push-notifications {
+    background: var(--vnn-paper, #faf9f7);
+    border: 1px solid var(--vnn-rule, #e5e2dc);
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .push-section {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .push-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .push-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .push-btn-primary {
+    background: var(--vnn-vermillion, #c41e3a);
+    color: white;
+  }
+
+  .push-btn-primary:hover:not(:disabled) {
+    background: #a31830;
+  }
+
+  .push-btn-secondary {
+    background: var(--vnn-light, #f0ede8);
+    color: var(--vnn-ink, #1a1a1a);
+  }
+
+  .push-btn-secondary:hover:not(:disabled) {
+    background: var(--vnn-rule, #e5e2dc);
+  }
+
+  .push-btn-danger {
+    background: transparent;
+    color: var(--vnn-vermillion, #c41e3a);
+    border: 1px solid currentColor;
+  }
+
+  .push-btn-danger:hover:not(:disabled) {
+    background: var(--vnn-vermillion, #c41e3a);
+    color: white;
+  }
+
+  .push-countries {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: white;
+    border: 1px solid var(--vnn-rule, #e5e2dc);
+  }
+
+  .push-country-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--vnn-charcoal, #333);
+    cursor: pointer;
+  }
+
+  .push-country-label:hover {
+    color: var(--vnn-vermillion, #c41e3a);
+  }
+
+  .push-country-checkbox {
+    accent-color: var(--vnn-vermillion, #c41e3a);
+  }
+</style>
+
+<script define:vars={{ WORKER_URL, countries }}>
+  const workerUrl = WORKER_URL;
+  
+  // DOM elements
+  const sections = {
+    loading: document.getElementById('push-loading'),
+    login: document.getElementById('push-login'),
+    subscribe: document.getElementById('push-subscribe'),
+    subscribed: document.getElementById('push-subscribed'),
+    unsupported: document.getElementById('push-unsupported'),
+  };
+
+  function showSection(name) {
+    Object.entries(sections).forEach(([key, el]) => {
+      if (el) el.style.display = key === name ? 'block' : 'none';
+    });
+  }
+
+  // Check browser support
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showSection('unsupported');
+  } else {
+    init();
+  }
+
+  async function init() {
+    // Register service worker
+    try {
+      await navigator.serviceWorker.register('/sw.js');
+    } catch (err) {
+      console.error('Service worker registration failed:', err);
+    }
+
+    // Check URL params for auth callback
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('auth') === 'error') {
+      alert(params.get('message') || 'Authentication failed');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (params.get('auth') === 'success') {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // Check current subscription status
+    await checkSubscription();
+  }
+
+  async function checkSubscription() {
+    try {
+      const response = await fetch(`${workerUrl}/subscription`, {
+        credentials: 'include',
+      });
+
+      if (response.status === 401) {
+        showSection('login');
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.subscribed) {
+        showSubscribed(data.countries);
+      } else {
+        showSection('subscribe');
+        setupSubscribeForm();
+      }
+    } catch (err) {
+      console.error('Failed to check subscription:', err);
+      showSection('login');
+    }
+  }
+
+  function showSubscribed(subscribedCountries) {
+    showSection('subscribed');
+    const container = document.getElementById('push-current-countries');
+    if (container) {
+      container.innerHTML = subscribedCountries
+        .map(c => `<span class="px-2 py-1 bg-vnn-light text-vnn-charcoal text-xs font-mono">${c}</span>`)
+        .join('');
+    }
+  }
+
+  function setupSubscribeForm() {
+    const checkboxes = document.querySelectorAll('.push-country-checkbox');
+    const subscribeBtn = document.getElementById('push-subscribe-btn');
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const checked = document.querySelectorAll('.push-country-checkbox:checked');
+        if (subscribeBtn) subscribeBtn.disabled = checked.length === 0;
+      });
+    });
+  }
+
+  // Event handlers
+  document.getElementById('push-patreon-btn')?.addEventListener('click', () => {
+    const returnUrl = window.location.href;
+    window.location.href = `${workerUrl}/auth/patreon?return=${encodeURIComponent(returnUrl)}`;
+  });
+
+  document.getElementById('push-subscribe-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('push-subscribe-btn');
+    const errorEl = document.getElementById('push-subscribe-error');
+    
+    if (btn) btn.disabled = true;
+    if (errorEl) errorEl.style.display = 'none';
+
+    try {
+      // Request notification permission
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        throw new Error('Notification permission denied');
+      }
+
+      // Get VAPID public key
+      const vapidResponse = await fetch(`${workerUrl}/vapid-public-key`);
+      const { publicKey } = await vapidResponse.json();
+
+      // Subscribe to push
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      });
+
+      // Get selected countries
+      const checked = document.querySelectorAll('.push-country-checkbox:checked');
+      const selectedCountries = Array.from(checked).map(cb => cb.value);
+
+      // Send to server
+      const response = await fetch(`${workerUrl}/subscribe`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscription: subscription.toJSON(),
+          countries: selectedCountries,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Subscription failed');
+      }
+
+      showSubscribed(selectedCountries);
+    } catch (err) {
+      console.error('Subscribe error:', err);
+      if (errorEl) {
+        errorEl.textContent = err.message || 'Failed to subscribe';
+        errorEl.style.display = 'block';
+      }
+      if (btn) btn.disabled = false;
+    }
+  });
+
+  document.getElementById('push-unsubscribe-btn')?.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to unsubscribe from notifications?')) return;
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe();
+      }
+
+      await fetch(`${workerUrl}/unsubscribe`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      showSection('subscribe');
+      setupSubscribeForm();
+      
+      // Uncheck all checkboxes
+      document.querySelectorAll('.push-country-checkbox').forEach(cb => {
+        cb.checked = false;
+      });
+    } catch (err) {
+      console.error('Unsubscribe error:', err);
+      alert('Failed to unsubscribe');
+    }
+  });
+
+  document.getElementById('push-edit-btn')?.addEventListener('click', () => {
+    showSection('subscribe');
+    setupSubscribeForm();
+  });
+
+  document.getElementById('push-logout-btn')?.addEventListener('click', () => {
+    // Clear session cookie by redirecting to a logout endpoint or just showing login
+    document.cookie = 'vnn_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    showSection('login');
+  });
+
+  // Helper function
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+</script>
