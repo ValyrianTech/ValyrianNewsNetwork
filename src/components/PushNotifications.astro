@@ -192,6 +192,7 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
 
 <script define:vars={{ WORKER_URL, countries }}>
   const workerUrl = WORKER_URL;
+  const TOKEN_KEY = 'vnn_push_token';
   
   // DOM elements
   const sections = {
@@ -206,6 +207,23 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
     Object.entries(sections).forEach(([key, el]) => {
       if (el) el.style.display = key === name ? 'block' : 'none';
     });
+  }
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  function setToken(token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+
+  function authHeaders() {
+    const token = getToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 
   // Check browser support
@@ -229,6 +247,11 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
       alert(params.get('message') || 'Authentication failed');
       window.history.replaceState({}, '', window.location.pathname);
     } else if (params.get('auth') === 'success') {
+      // Store token from URL
+      const token = params.get('token');
+      if (token) {
+        setToken(token);
+      }
       window.history.replaceState({}, '', window.location.pathname);
     }
 
@@ -237,12 +260,19 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
   }
 
   async function checkSubscription() {
+    const token = getToken();
+    if (!token) {
+      showSection('login');
+      return;
+    }
+
     try {
       const response = await fetch(`${workerUrl}/subscription`, {
-        credentials: 'include',
+        headers: authHeaders(),
       });
 
       if (response.status === 401) {
+        clearToken();
         showSection('login');
         return;
       }
@@ -321,8 +351,10 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
       // Send to server
       const response = await fetch(`${workerUrl}/subscribe`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...authHeaders(),
+        },
         body: JSON.stringify({
           subscription: subscription.toJSON(),
           countries: selectedCountries,
@@ -357,7 +389,7 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
 
       await fetch(`${workerUrl}/unsubscribe`, {
         method: 'POST',
-        credentials: 'include',
+        headers: authHeaders(),
       });
 
       showSection('subscribe');
@@ -379,8 +411,7 @@ const WORKER_URL = 'https://vnn-push.valyriannewsnetwork.workers.dev';
   });
 
   document.getElementById('push-logout-btn')?.addEventListener('click', () => {
-    // Clear session cookie by redirecting to a logout endpoint or just showing login
-    document.cookie = 'vnn_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    clearToken();
     showSection('login');
   });
 
