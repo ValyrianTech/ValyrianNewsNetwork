@@ -225,6 +225,7 @@ export const COUNTRY_TAGS: Record<string, string> = {
   'uk news': 'UK',
   'uk politics': 'UK',
   'united states': 'US',
+  'united_states': 'US',
   'us': 'US',
   'usa': 'US',
   'uruguay': 'Uruguay',
