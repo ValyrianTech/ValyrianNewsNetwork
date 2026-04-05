@@ -254,10 +254,11 @@ def send_push_notifications(front_matter: dict) -> None:
         print("ℹ️  No country tags found, skipping push notifications")
         return
     
+    date_path = get_date_path(front_matter)
     payload = {
         'title': front_matter['title'],
         'description': front_matter['meta_description'],
-        'url': f"https://valyrian-news-network.github.io/posts/{front_matter['slug']}",
+        'url': f"https://valyrian-news-network.github.io/posts/{date_path}/{front_matter['slug']}",
         'countries': countries,
     }
     
