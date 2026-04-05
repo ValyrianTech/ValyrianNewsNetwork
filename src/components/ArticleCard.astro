@@ -1,4 +1,6 @@
 ---
+import { getPostUrl } from '../utils/urls';
+
 interface Props {
   title: string;
   slug: string;
@@ -13,6 +15,7 @@ interface Props {
 
 const { title, slug, date, meta_description, categories, read_time_minutes, featured = false, compact = false, showDate = true } = Astro.props;
 
+const postUrl = getPostUrl(slug, date);
 const formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
@@ -29,7 +32,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
     </div>
     
     <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-black mb-4 leading-[1.1] tracking-tight">
-      <a href={`/posts/${slug}`} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
+      <a href={postUrl} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
         {title}
       </a>
     </h2>
@@ -55,7 +58,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
     </div>
     
     <h3 class="font-display text-lg font-bold mb-1.5 leading-snug">
-      <a href={`/posts/${slug}`} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
+      <a href={postUrl} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
         {title}
       </a>
     </h3>
@@ -81,7 +84,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
     </div>
     
     <h3 class="font-display text-xl md:text-2xl font-bold mb-2 leading-tight">
-      <a href={`/posts/${slug}`} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
+      <a href={postUrl} class="text-vnn-ink no-underline group-hover:text-vnn-vermillion transition-colors duration-300">
         {title}
       </a>
     </h3>
