@@ -118,49 +118,66 @@ def find_existing_slug(posts_dir: Path, slug: str) -> Path | None:
     return None
 
 
-def publish_article(
-    source_path: Path,
+class DuplicateSlugError(ValueError):
+    """Raised when an article with the same slug already exists."""
+
+    def __init__(self, slug: str, existing_path: Path):
+        super().__init__(f"Article with slug '{slug}' already exists")
+        self.slug = slug
+        self.existing_path = existing_path
+
+
+class FrontMatterValidationError(ValueError):
+    """Raised when front matter validation fails."""
+
+    def __init__(self, errors: list[str]):
+        super().__init__("Article validation failed: " + "; ".join(errors))
+        self.errors = errors
+
+
+def publish_article_content(
+    markdown: str,
     dest_dir: Path,
     commit: bool = False,
-    repo_root: Path | None = None
-) -> Path:
+    repo_root: Path | None = None,
+    dry_run: bool = False,
+) -> tuple[Path, dict, str]:
     """
-    Publish an article to the content directory.
-    
+    Publish an article (given its full markdown content) to the content directory.
+
     Args:
-        source_path: Path to the source article markdown file
-        dest_dir: Destination directory (src/content/posts/)
-        commit: Whether to git commit the change
-        repo_root: Root of the git repository (for commit)
-    
+        markdown: Full article markdown including YAML front matter.
+        dest_dir: Destination directory (src/content/posts/).
+        commit: Whether to git commit the change (ignored if dry_run).
+        repo_root: Root of the git repository (for commit).
+        dry_run: If True, validate and compute the destination path but
+            do not write to disk or touch git.
+
     Returns:
-        Path to the published article
+        Tuple of (destination path, parsed front matter, body).
     """
-    print(f"📄 Reading article from: {source_path}")
-    
-    content = source_path.read_text(encoding='utf-8')
-    front_matter, body = parse_front_matter(content)
-    
+    front_matter, body = parse_front_matter(markdown)
+
     print(f"📝 Title: {front_matter.get('title', 'Unknown')}")
     print(f"📅 Date: {front_matter.get('date', 'Unknown')}")
-    
+
     errors = validate_front_matter(front_matter)
     if errors:
         print("❌ Validation errors:")
         for error in errors:
             print(f"   - {error}")
-        raise ValueError("Article validation failed")
-    
+        raise FrontMatterValidationError(errors)
+
     print("✅ Front matter validated")
-    
+
     existing = find_existing_slug(dest_dir, front_matter['slug'])
     if existing:
         print(f"❌ Duplicate slug detected!")
         print(f"   Slug '{front_matter['slug']}' already exists at: {existing}")
-        raise ValueError(f"Article with slug '{front_matter['slug']}' already exists")
-    
+        raise DuplicateSlugError(front_matter['slug'], existing)
+
     print("✅ No duplicate slug found")
-    
+
     if 'draft' not in front_matter:
         front_matter['draft'] = False
     if 'categories' not in front_matter:
@@ -169,22 +186,26 @@ def publish_article(
         front_matter['tags'] = []
     if 'style' not in front_matter:
         front_matter['style'] = 'formal_news'
-    
+
     date_path = get_date_path(front_matter)
     filename = generate_filename(front_matter)
     full_dest_dir = dest_dir / date_path
     dest_path = full_dest_dir / filename
-    
+
+    if dry_run:
+        print(f"🧪 Dry run — would publish to: {dest_path}")
+        return dest_path, front_matter, body
+
     full_dest_dir.mkdir(parents=True, exist_ok=True)
-    
+
     new_content = "---\n"
     new_content += yaml.dump(front_matter, default_flow_style=False, allow_unicode=True, sort_keys=False)
     new_content += "---\n"
     new_content += body
-    
+
     dest_path.write_text(new_content, encoding='utf-8')
     print(f"✅ Article published to: {dest_path}")
-    
+
     if commit and repo_root:
         print("📦 Committing to git...")
         try:
@@ -194,7 +215,7 @@ def publish_article(
                 check=True,
                 capture_output=True
             )
-            
+
             commit_msg = f"Publish: {front_matter['title']}"
             subprocess.run(
                 ['git', 'commit', '-m', commit_msg],
@@ -205,7 +226,26 @@ def publish_article(
             print(f"✅ Committed: {commit_msg}")
         except subprocess.CalledProcessError as e:
             print(f"⚠️  Git commit failed: {e.stderr.decode() if e.stderr else str(e)}")
-    
+
+    return dest_path, front_matter, body
+
+
+def publish_article(
+    source_path: Path,
+    dest_dir: Path,
+    commit: bool = False,
+    repo_root: Path | None = None
+) -> Path:
+    """Read an article from disk and publish it. Thin wrapper around
+    ``publish_article_content`` for the CLI."""
+    print(f"📄 Reading article from: {source_path}")
+    content = source_path.read_text(encoding='utf-8')
+    dest_path, _, _ = publish_article_content(
+        markdown=content,
+        dest_dir=dest_dir,
+        commit=commit,
+        repo_root=repo_root,
+    )
     return dest_path
 
 
@@ -242,18 +282,23 @@ def extract_countries(tags: list[str]) -> list[str]:
 
 def send_push_notifications(front_matter: dict) -> None:
     """Send push notifications to subscribers."""
+    print("🔔 send_push_notifications: starting")
     api_key = os.environ.get('VNN_PUSH_API_KEY')
     if not api_key:
         print("⚠️  VNN_PUSH_API_KEY not set, skipping push notifications")
         return
-    
+    print(f"🔔 VNN_PUSH_API_KEY present (len={len(api_key)})")
+
     worker_url = os.environ.get('VNN_PUSH_WORKER_URL', 'https://vnn-push.valyriannewsnetwork.workers.dev')
-    
-    countries = extract_countries(front_matter.get('tags', []))
+    print(f"🔔 Worker URL: {worker_url}")
+
+    tags = front_matter.get('tags', [])
+    countries = extract_countries(tags)
+    print(f"🔔 Tags={tags} → countries={countries}")
     if not countries:
         print("ℹ️  No country tags found, skipping push notifications")
         return
-    
+
     date_path = get_date_path(front_matter)
     payload = {
         'title': front_matter['title'],
@@ -261,7 +306,8 @@ def send_push_notifications(front_matter: dict) -> None:
         'url': f"https://valyrian-news-network.github.io/posts/{date_path}/{front_matter['slug']}",
         'countries': countries,
     }
-    
+    print(f"🔔 POST {worker_url}/send payload={payload}")
+
     try:
         response = requests.post(
             f"{worker_url}/send",
@@ -269,11 +315,14 @@ def send_push_notifications(front_matter: dict) -> None:
             headers={'Authorization': f'Bearer {api_key}'},
             timeout=30,
         )
+        print(f"🔔 Response status: {response.status_code}")
         response.raise_for_status()
         result = response.json()
-        print(f"🔔 Push notifications: {result.get('message', 'sent')}")
+        print(f"🔔 Push notifications: {result.get('message', 'sent')} (full response: {result})")
     except requests.RequestException as e:
         print(f"⚠️  Failed to send push notifications: {e}")
+        if getattr(e, 'response', None) is not None:
+            print(f"⚠️  Response body: {e.response.text}")
 
 
 def main():

@@ -76,6 +76,46 @@ featured_image_caption: "Image caption"       # optional
 ---
 ```
 
+## Publish API (LAN)
+
+For publishing articles from a different machine (e.g. the SERENDIPITY host),
+run the small FastAPI server in `automation/`:
+
+```bash
+pip install -r automation/requirements.txt
+# Set VNN_PUBLISH_API_KEY in automation/.env (see .env.example)
+python automation/api_server.py
+# or: uvicorn automation.api_server:app --host 0.0.0.0 --port 8787
+```
+
+The server validates front matter, writes the article into
+`src/content/posts/YYYY/MM/DD/`, and runs `git add` + `git commit`.
+**It does NOT `git push`** — pushing remains a manual step.
+
+### Endpoints
+
+| Method | Path         | Description                          |
+| :----- | :----------- | :----------------------------------- |
+| GET    | `/healthz`   | Liveness probe                       |
+| POST   | `/articles`  | Publish an article (bearer auth)     |
+
+### Example
+
+```bash
+curl -X POST http://<lan-host>:8787/articles \
+  -H "Authorization: Bearer $VNN_PUBLISH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "markdown": "---\ntitle: ...\n---\nBody...",
+        "commit": true,
+        "notify": true,
+        "dry_run": false
+      }'
+```
+
+Response codes: `201` on success, `400` on validation errors,
+`409` on duplicate slug, `401` on auth failure, `413` if the body exceeds 1 MiB.
+
 ## Deployment
 
 Push to `main` branch triggers automatic deployment via GitHub Actions to GitHub Pages.
