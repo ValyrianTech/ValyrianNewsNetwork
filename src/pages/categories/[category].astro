@@ -25,7 +25,12 @@ export async function getStaticPaths() {
 }
 
 const { category, posts } = Astro.props;
-const sortedPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const dayKey = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+const sortedPosts = posts.sort((a, b) => {
+  const dayDiff = dayKey(b.data.date) - dayKey(a.data.date);
+  if (dayDiff !== 0) return dayDiff;
+  return a.data.date.valueOf() - b.data.date.valueOf();
+});
 
 const displayCategory = category.split('-').map(word => 
   word.charAt(0).toUpperCase() + word.slice(1)
