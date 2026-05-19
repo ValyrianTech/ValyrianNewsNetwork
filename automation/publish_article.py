@@ -250,27 +250,140 @@ def publish_article(
 
 
 def extract_countries(tags: list[str]) -> list[str]:
-    """Extract country names from tags."""
+    """Extract canonical country labels from tags.
+
+    IMPORTANT: This map MUST stay in sync with `src/utils/countries.ts` on the
+    site, because subscribers register using the canonical labels produced
+    there (e.g. "US", "UK", "UAE"). If publisher and site diverge, push
+    notifications target a country string with zero matching subscribers.
+    """
     COUNTRY_TAGS = {
-        'usa': 'United States', 'united states': 'United States', 'america': 'United States',
-        'uk': 'United Kingdom', 'united kingdom': 'United Kingdom', 'britain': 'United Kingdom',
-        'china': 'China', 'russia': 'Russia', 'germany': 'Germany', 'france': 'France',
-        'japan': 'Japan', 'india': 'India', 'brazil': 'Brazil', 'canada': 'Canada',
-        'australia': 'Australia', 'italy': 'Italy', 'spain': 'Spain', 'mexico': 'Mexico',
-        'south korea': 'South Korea', 'korea': 'South Korea', 'netherlands': 'Netherlands',
-        'switzerland': 'Switzerland', 'sweden': 'Sweden', 'poland': 'Poland',
-        'belgium': 'Belgium', 'austria': 'Austria', 'norway': 'Norway', 'denmark': 'Denmark',
-        'finland': 'Finland', 'ireland': 'Ireland', 'portugal': 'Portugal', 'greece': 'Greece',
-        'czech republic': 'Czech Republic', 'romania': 'Romania', 'hungary': 'Hungary',
-        'israel': 'Israel', 'saudi arabia': 'Saudi Arabia', 'uae': 'UAE',
-        'united arab emirates': 'UAE', 'turkey': 'Turkey', 'egypt': 'Egypt',
-        'south africa': 'South Africa', 'nigeria': 'Nigeria', 'kenya': 'Kenya',
-        'indonesia': 'Indonesia', 'thailand': 'Thailand', 'vietnam': 'Vietnam',
-        'philippines': 'Philippines', 'malaysia': 'Malaysia', 'singapore': 'Singapore',
-        'taiwan': 'Taiwan', 'hong kong': 'Hong Kong', 'pakistan': 'Pakistan',
-        'bangladesh': 'Bangladesh', 'iran': 'Iran', 'iraq': 'Iraq', 'ukraine': 'Ukraine',
-        'argentina': 'Argentina', 'chile': 'Chile', 'colombia': 'Colombia', 'peru': 'Peru',
-        'venezuela': 'Venezuela', 'new zealand': 'New Zealand',
+        # A
+        'afghanistan': 'Afghanistan', 'albania': 'Albania', 'algeria': 'Algeria',
+        'andorra': 'Andorra', 'angola': 'Angola',
+        'antigua and barbuda': 'Antigua and Barbuda',
+        'argentina': 'Argentina', 'armenia': 'Armenia', 'australia': 'Australia',
+        'austria': 'Austria', 'azerbaijan': 'Azerbaijan',
+        # B
+        'bahamas': 'Bahamas', 'bahrain': 'Bahrain', 'bangladesh': 'Bangladesh',
+        'barbados': 'Barbados', 'belarus': 'Belarus', 'belgium': 'Belgium',
+        'belize': 'Belize', 'benin': 'Benin', 'bhutan': 'Bhutan',
+        'bolivia': 'Bolivia',
+        'bosnia and herzegovina': 'Bosnia and Herzegovina',
+        'bosnia': 'Bosnia and Herzegovina',
+        'botswana': 'Botswana', 'brazil': 'Brazil', 'brunei': 'Brunei',
+        'bulgaria': 'Bulgaria', 'burkina faso': 'Burkina Faso',
+        'burundi': 'Burundi',
+        # C
+        'cabo verde': 'Cabo Verde', 'cape verde': 'Cabo Verde',
+        'cambodia': 'Cambodia', 'cameroon': 'Cameroon', 'canada': 'Canada',
+        'central african republic': 'Central African Republic',
+        'chad': 'Chad', 'chile': 'Chile', 'china': 'China',
+        'colombia': 'Colombia', 'comoros': 'Comoros', 'congo': 'Congo',
+        'democratic republic of the congo': 'DR Congo',
+        'dr congo': 'DR Congo',
+        'costa rica': 'Costa Rica', 'croatia': 'Croatia', 'cuba': 'Cuba',
+        'cyprus': 'Cyprus', 'czech republic': 'Czech Republic',
+        'czechia': 'Czech Republic',
+        # D
+        'denmark': 'Denmark', 'djibouti': 'Djibouti', 'dominica': 'Dominica',
+        'dominican republic': 'Dominican Republic',
+        # E
+        'east timor': 'East Timor', 'timor-leste': 'East Timor',
+        'ecuador': 'Ecuador', 'egypt': 'Egypt', 'el salvador': 'El Salvador',
+        'equatorial guinea': 'Equatorial Guinea', 'eritrea': 'Eritrea',
+        'estonia': 'Estonia', 'eswatini': 'Eswatini',
+        'swaziland': 'Eswatini', 'ethiopia': 'Ethiopia',
+        # F
+        'fiji': 'Fiji', 'finland': 'Finland', 'france': 'France',
+        # G
+        'gabon': 'Gabon', 'gambia': 'Gambia', 'georgia': 'Georgia',
+        'germany': 'Germany', 'ghana': 'Ghana', 'greece': 'Greece',
+        'grenada': 'Grenada', 'guatemala': 'Guatemala', 'guinea': 'Guinea',
+        'guinea-bissau': 'Guinea-Bissau', 'guyana': 'Guyana',
+        # H
+        'haiti': 'Haiti', 'honduras': 'Honduras', 'hungary': 'Hungary',
+        # I
+        'iceland': 'Iceland', 'india': 'India', 'indonesia': 'Indonesia',
+        'iran': 'Iran', 'iraq': 'Iraq', 'ireland': 'Ireland',
+        'israel': 'Israel', 'italy': 'Italy', 'ivory coast': 'Ivory Coast',
+        "cote d'ivoire": 'Ivory Coast',
+        # J
+        'jamaica': 'Jamaica', 'japan': 'Japan', 'jordan': 'Jordan',
+        # K
+        'kazakhstan': 'Kazakhstan', 'kenya': 'Kenya', 'kiribati': 'Kiribati',
+        'kosovo': 'Kosovo', 'kuwait': 'Kuwait', 'kyrgyzstan': 'Kyrgyzstan',
+        # L
+        'laos': 'Laos', 'latvia': 'Latvia', 'lebanon': 'Lebanon',
+        'lesotho': 'Lesotho', 'liberia': 'Liberia', 'libya': 'Libya',
+        'liechtenstein': 'Liechtenstein', 'lithuania': 'Lithuania',
+        'luxembourg': 'Luxembourg',
+        # M
+        'madagascar': 'Madagascar', 'malawi': 'Malawi', 'malaysia': 'Malaysia',
+        'maldives': 'Maldives', 'mali': 'Mali', 'malta': 'Malta',
+        'marshall islands': 'Marshall Islands', 'mauritania': 'Mauritania',
+        'mauritius': 'Mauritius', 'mexico': 'Mexico',
+        'micronesia': 'Micronesia', 'moldova': 'Moldova', 'monaco': 'Monaco',
+        'mongolia': 'Mongolia', 'montenegro': 'Montenegro',
+        'morocco': 'Morocco', 'mozambique': 'Mozambique',
+        'myanmar': 'Myanmar', 'burma': 'Myanmar',
+        # N
+        'namibia': 'Namibia', 'nauru': 'Nauru', 'nepal': 'Nepal',
+        'netherlands': 'Netherlands', 'new zealand': 'New Zealand',
+        'nicaragua': 'Nicaragua', 'niger': 'Niger', 'nigeria': 'Nigeria',
+        'north korea': 'North Korea',
+        'north macedonia': 'North Macedonia', 'norway': 'Norway',
+        # O
+        'oman': 'Oman',
+        # P
+        'pakistan': 'Pakistan', 'palau': 'Palau', 'palestine': 'Palestine',
+        'panama': 'Panama', 'papua new guinea': 'Papua New Guinea',
+        'paraguay': 'Paraguay', 'peru': 'Peru',
+        'philippines': 'Philippines', 'poland': 'Poland',
+        'portugal': 'Portugal',
+        # Q
+        'qatar': 'Qatar',
+        # R
+        'romania': 'Romania', 'russia': 'Russia', 'rwanda': 'Rwanda',
+        # S
+        'saint kitts and nevis': 'Saint Kitts and Nevis',
+        'saint lucia': 'Saint Lucia',
+        'saint vincent and the grenadines': 'Saint Vincent and the Grenadines',
+        'samoa': 'Samoa', 'san marino': 'San Marino',
+        'sao tome and principe': 'São Tomé and Príncipe',
+        'saudi arabia': 'Saudi Arabia', 'senegal': 'Senegal',
+        'serbia': 'Serbia', 'seychelles': 'Seychelles',
+        'sierra leone': 'Sierra Leone', 'singapore': 'Singapore',
+        'slovakia': 'Slovakia', 'slovenia': 'Slovenia',
+        'solomon islands': 'Solomon Islands', 'somalia': 'Somalia',
+        'south africa': 'South Africa', 'south korea': 'South Korea',
+        'korea': 'South Korea',
+        'south sudan': 'South Sudan', 'spain': 'Spain',
+        'sri lanka': 'Sri Lanka', 'sudan': 'Sudan',
+        'suriname': 'Suriname', 'sweden': 'Sweden',
+        'switzerland': 'Switzerland', 'syria': 'Syria',
+        # T
+        'taiwan': 'Taiwan', 'tajikistan': 'Tajikistan',
+        'tanzania': 'Tanzania', 'thailand': 'Thailand', 'togo': 'Togo',
+        'tonga': 'Tonga', 'trinidad and tobago': 'Trinidad and Tobago',
+        'tunisia': 'Tunisia', 'turkey': 'Turkey',
+        'turkmenistan': 'Turkmenistan', 'tuvalu': 'Tuvalu',
+        # U
+        'uganda': 'Uganda', 'ukraine': 'Ukraine',
+        'united arab emirates': 'UAE', 'uae': 'UAE',
+        'united kingdom': 'UK', 'uk': 'UK',
+        'uk news': 'UK', 'uk politics': 'UK', 'britain': 'UK',
+        'united states': 'US', 'united_states': 'US',
+        'us': 'US', 'usa': 'US', 'america': 'US',
+        'uruguay': 'Uruguay', 'uzbekistan': 'Uzbekistan',
+        # V
+        'vanuatu': 'Vanuatu', 'vatican': 'Vatican City',
+        'vatican city': 'Vatican City', 'venezuela': 'Venezuela',
+        'vietnam': 'Vietnam',
+        # Y
+        'yemen': 'Yemen',
+        # Z
+        'zambia': 'Zambia', 'zimbabwe': 'Zimbabwe',
     }
     countries = set()
     for tag in tags:
