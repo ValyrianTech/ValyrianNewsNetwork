@@ -44,7 +44,8 @@ const allGroupedByDate = sortedPosts.reduce((groups: Record<string, typeof sorte
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'UTC'
   });
   if (!groups[dateKey]) {
     groups[dateKey] = [];
@@ -59,7 +60,8 @@ const remainingGroupedByDate = remainingPosts.reduce((groups: Record<string, typ
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'UTC'
   });
   if (!groups[dateKey]) {
     groups[dateKey] = [];
