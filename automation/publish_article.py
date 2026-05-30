@@ -50,6 +50,14 @@ def parse_front_matter(content: str) -> tuple[dict, str]:
     return front_matter, body
 
 
+def decode_unicode_escapes(text: str) -> str:
+    return re.sub(
+        r'\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})',
+        lambda match: chr(int(match.group(1) or match.group(2), 16)),
+        text,
+    )
+
+
 def validate_front_matter(front_matter: dict) -> list[str]:
     """Validate required fields in front matter. Returns list of errors."""
     required_fields = [
@@ -167,6 +175,7 @@ def publish_article_content(
         Tuple of (destination path, parsed front matter, body, committed, pushed).
     """
     front_matter, body = parse_front_matter(markdown)
+    body = decode_unicode_escapes(body)
 
     print(f"📝 Title: {front_matter.get('title', 'Unknown')}")
     print(f"📅 Date: {front_matter.get('date', 'Unknown')}")

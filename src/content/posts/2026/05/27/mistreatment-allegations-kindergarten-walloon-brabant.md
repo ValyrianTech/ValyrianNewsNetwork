@@ -26,17 +26,17 @@ A municipal school in Walloon Brabant is reeling from serious allegations of phy
 
 ## Context
 
-The allegations come from a small municipal school (\u00e9cole communale) in Belgium's Walloon Brabant province, a region south of Brussels known for its well-regarded educational infrastructure. The specific municipality has not been publicly named to protect the children involved and the integrity of the ongoing investigation, according to reporting from [La Libre Belgique](https://www.lalibre.be/belgique/judiciaire/2026/05/27/des-accusations-graves-de-faits-de-maltraitance-commis-sur-des-petits-enfants-de-maternelle-secouent-une-ecole-communale-du-brabant-wallon-ZTZUKNU6VNHQ3C7M4BCIPQNQTI/).
+The allegations come from a small municipal school (école communale) in Belgium's Walloon Brabant province, a region south of Brussels known for its well-regarded educational infrastructure. The specific municipality has not been publicly named to protect the children involved and the integrity of the ongoing investigation, according to reporting from [La Libre Belgique](https://www.lalibre.be/belgique/judiciaire/2026/05/27/des-accusations-graves-de-faits-de-maltraitance-commis-sur-des-petits-enfants-de-maternelle-secouent-une-ecole-communale-du-brabant-wallon-ZTZUKNU6VNHQ3C7M4BCIPQNQTI/).
 
-Belgium maintains a well-established legal framework for child protection, with the French Community of Belgium (F\u00e9d\u00e9ration Wallonie-Bruxelles) mandating specific protocols for reporting suspected abuse in educational settings. Schools are required to designate a "personne de confiance" (trusted person) and follow established procedures for handling allegations. The "SOS Enfants" teams serve as the primary child protection bodies in the French-speaking community.
+Belgium maintains a well-established legal framework for child protection, with the French Community of Belgium (Fédération Wallonie-Bruxelles) mandating specific protocols for reporting suspected abuse in educational settings. Schools are required to designate a "personne de confiance" (trusted person) and follow established procedures for handling allegations. The "SOS Enfants" teams serve as the primary child protection bodies in the French-speaking community.
 
 ## Key Developments
 
-On Friday, May 22, the school sent an email to all families of its young students describing the accusations as "extremely serious" ("extr\u00eamement graves") and acknowledging their "significant impact" on the school's general atmosphere. The email, which notably began with a simple "Bonjour \u00e0 tous" rather than the customary "Dear Parents," painted a stark picture of the situation.
+On Friday, May 22, the school sent an email to all families of its young students describing the accusations as "extremely serious" ("extrêmement graves") and acknowledging their "significant impact" on the school's general atmosphere. The email, which notably began with a simple "Bonjour à tous" rather than the customary "Dear Parents," painted a stark picture of the situation.
 
 "Every day, it becomes more difficult for the educational team to come to work serenely, faced with the looks, questions and reactions of some parents," the school wrote, as reported by both La Libre Belgique and [DHNet/Les Sports+](https://www.dhnet.be/regions/brabant/2026/05/27/des-soupcons-de-violences-envers-des-enfants-de-maternelle-provoquent-lemoi-dans-une-ecole-du-brabant-wallon-IJMJHTWMHZCPPBJYFWEMM2EFN4/).
 
-The school's annual "fancy-fair" (f\u00eate d'\u00e9cole), originally scheduled for June 13, has been cancelled due to the escalating tensions. The decision reflects the deepening crisis within the school community, where staff morale has been severely affected by the allegations and the resulting scrutiny from parents.
+The school's annual "fancy-fair" (fête d'école), originally scheduled for June 13, has been cancelled due to the escalating tensions. The decision reflects the deepening crisis within the school community, where staff morale has been severely affected by the allegations and the resulting scrutiny from parents.
 
 ## Analysis & Implications
 

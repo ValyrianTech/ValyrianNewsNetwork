@@ -35,7 +35,7 @@ It remains unclear whether the shooting began at the station itself or elsewhere
 
 ## Possible Drug Milieu Connection
 
-The prosecutor's office is actively investigating a potential link to the drug milieu, with specific reference to Diksmuide's history with the synthetic drug "flakka" (\u03b1-PVP), also known as the "zombie drug." According to VRT NWS, the flakka problem in Diksmuide had subsided somewhat over the past year, but Monday's shooting has raised concerns about a possible resurgence.
+The prosecutor's office is actively investigating a potential link to the drug milieu, with specific reference to Diksmuide's history with the synthetic drug "flakka" (α-PVP), also known as the "zombie drug." According to VRT NWS, the flakka problem in Diksmuide had subsided somewhat over the past year, but Monday's shooting has raised concerns about a possible resurgence.
 
 Just seven weeks earlier, on April 3, 2026, a 28-year-old man under the influence of flakka caused panic in a Diksmuide residential neighborhood. The man crept barefoot through front gardens claiming he had murdered his girlfriend, who was later found unharmed. Police deployed multiple units and a drone team to locate him, as [VRT NWS reported](https://www.vrt.be/vrtnws/nl/2026/04/03/verwarde-flakkagebruiker-zet-woonwijk-in-diksmuide-op-stelten/).
 

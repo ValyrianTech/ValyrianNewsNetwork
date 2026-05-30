@@ -22,7 +22,7 @@ draft: false
 ---
 # RT-Mart Founder Yin Yanliang Dies at 76, Leaving a Legacy of Retail and Philanthropy
 
-Yin Yanliang (\u5c39\u884d\u6a91), the billionaire founder of RT-Mart who built one of China's largest hypermarket chains and established the prestigious Tang Prize, died on May 26 at Taipei Veterans General Hospital. He was 76. The cause of death was not publicly disclosed, according to [The Paper](https://www.thepaper.cn/newsDetail_forward_33236490).
+Yin Yanliang (尹衍檑), the billionaire founder of RT-Mart who built one of China's largest hypermarket chains and established the prestigious Tang Prize, died on May 26 at Taipei Veterans General Hospital. He was 76. The cause of death was not publicly disclosed, according to [The Paper](https://www.thepaper.cn/newsDetail_forward_33236490).
 
 Yin passed away at approximately 4:00 AM Taipei time, as reported by the [Economic Daily News](https://money.udn.com/money/story/5612/9525748). At the time of his death, his net worth stood at approximately US$9.7 billion, according to the Bloomberg Billionaires Index, with his primary wealth derived from his stake in Nan Shan Life Insurance, Taiwan's third-largest life insurer, as [Lianhe Zaobao](https://www.zaobao.com.sg/news/china/story20260527-9112753) reported.
 
@@ -36,7 +36,7 @@ He went on to build a business empire spanning textiles, construction, finance, 
 
 In 1996, Yin founded RT-Mart International under Ruentex Group. The following year, the chain entered the Chinese mainland market, opening its first store in Shanghai in 1998. RT-Mart differentiated itself through a deeply localized strategy, investing heavily in fresh food supply chains and implementing a "lowest price in the industry" guarantee. Each store deployed six to seven price-checking staff who constantly monitored competitors' prices.
 
-Yin's core philosophy was that "hypermarkets sell happiness" (\u5927\u5356\u573a\u8d29\u5356\u7684\u662f\u5e78\u798f), and he believed retailers must stand as the most faithful representatives of consumer interests. At its peak, RT-Mart operated over 500 stores across China, surpassing both Carrefour and Walmart to become the country's largest hypermarket chain.
+Yin's core philosophy was that "hypermarkets sell happiness" (大卖场贩卖的是幸福), and he believed retailers must stand as the most faithful representatives of consumer interests. At its peak, RT-Mart operated over 500 stores across China, surpassing both Carrefour and Walmart to become the country's largest hypermarket chain.
 
 In 2011, RT-Mart and its French joint venture partner Auchan listed as Gaoxin Retail on the Hong Kong Stock Exchange, becoming China's largest hypermarket operator. The Paper reported that as of March 2026, Gaoxin Retail operated 462 hypermarkets, 34 medium-sized supermarkets, and six M Membership Stores.
 
@@ -56,7 +56,7 @@ Yin was also one of Taiwan's most prolific inventors, holding over 650 patents a
 
 ## Business Philosophy and Management Style
 
-Yin often quoted his father's wisdom: "Small merchants sell goods; great merchants sell credibility" (\u5c0f\u5546\u4eba\u8d29\u5356\u7684\u662f\u8d27\u54c1\uff0c\u5927\u5546\u4eba\u8d29\u5356\u7684\u662f\u4fe1\u8a89). He believed that a merchant's lifeblood was their reputation and famously spent money to help consumers hire lawyers to sue his own company if they felt wronged.
+Yin often quoted his father's wisdom: "Small merchants sell goods; great merchants sell credibility" (小商人贩卖的是货品，大商人贩卖的是信誉). He believed that a merchant's lifeblood was their reputation and famously spent money to help consumers hire lawyers to sue his own company if they felt wronged.
 
 Former RT-Mart spokesperson He Mozhen recalled Yin as the entrepreneur she admired most in her career, praising his "conflict management" style as the best she had ever seen. He encouraged competition between business units while directing all efforts toward the group's benefit, as reported by [ETtoday](https://www.ettoday.net/news/20260526/3172328.htm).
 
