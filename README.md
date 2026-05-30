@@ -1,5 +1,7 @@
 # Valyrian News Network (VNN)
 
+**Live site:** [https://vnn.valyrian.tech/](https://vnn.valyrian.tech/)
+
 **AI-synthesized, context-rich news analysis with full transparency.**
 
 A project of [Valyrian Tech](https://valyrian.tech), powered by the SERENDIPITY AGI framework.
