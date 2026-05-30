@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { withBase } from '../utils/urls';
 
 interface Props {
   title: string;
@@ -37,7 +38,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
       <div class="flex flex-wrap gap-3 mb-5">
         {categories.map(category => (
           <a 
-            href={`/categories/${category.toLowerCase().replace(/[\s/]+/g, '-')}`}
+            href={withBase(`/categories/${category.toLowerCase().replace(/[\s/]+/g, '-')}`)}
             class="category-pill no-underline hover:underline"
           >
             {category}
@@ -61,7 +62,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
     {featured_image && (
       <figure class="mb-10 animate-fade-in-up stagger-1">
         <img 
-          src={featured_image} 
+          src={featured_image.startsWith('http') ? featured_image : withBase(featured_image)} 
           alt={featured_image_caption || title}
           class="w-full"
         />
@@ -84,7 +85,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
           <div class="flex flex-wrap gap-2">
             {tags.map(tag => (
               <a 
-                href={`/tags/${tag.toLowerCase().replace(/[\s/]+/g, '-')}`}
+                href={withBase(`/tags/${tag.toLowerCase().replace(/[\s/]+/g, '-')}`)}
                 class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors"
               >
                 {tag}
@@ -98,7 +99,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
         <p class="m-0">
           <strong class="text-vnn-ink">Methodology Note:</strong> This article was synthesized and written by AI systems from Valyrian Tech. 
           Our process ensures factual sourcing and contextual analysis. 
-          <a href="/about" class="text-vnn-vermillion no-underline hover:underline">Learn more about how VNN works</a>.
+          <a href={withBase('/about')} class="text-vnn-vermillion no-underline hover:underline">Learn more about how VNN works</a>.
         </p>
       </div>
     </footer>

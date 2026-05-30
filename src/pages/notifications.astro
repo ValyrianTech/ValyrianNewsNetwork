@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PushNotifications from '../components/PushNotifications.astro';
+import { withBase } from '../utils/urls';
 ---
 
 <BaseLayout title="Push Notifications" description="Subscribe to push notifications for new VNN articles about countries you care about.">
@@ -63,12 +64,12 @@ import PushNotifications from '../components/PushNotifications.astro';
       <section>
         <h2 class="text-2xl font-bold text-vnn-charcoal mb-4">Privacy</h2>
         <p class="text-vnn-charcoal leading-relaxed">
-          We only store the minimum data needed to send you notifications: your push subscription endpoint, your selected countries, and your Patreon user ID. We never share this data with third parties. You can unsubscribe at any time, and we'll delete your data within 30 days. See our <a href="/privacy" class="text-vnn-vermillion">Privacy Policy</a> for details.
+          We only store the minimum data needed to send you notifications: your push subscription endpoint, your selected countries, and your Patreon user ID. We never share this data with third parties. You can unsubscribe at any time, and we'll delete your data within 30 days. See our <a href={withBase('/privacy')} class="text-vnn-vermillion">Privacy Policy</a> for details.
         </p>
       </section>
       
       <footer class="text-center text-vnn-gray text-sm pt-8 hairline-top">
-        <a href="/" class="text-vnn-vermillion hover:underline">← Back to Home</a>
+        <a href={withBase('/')} class="text-vnn-vermillion hover:underline">← Back to Home</a>
       </footer>
     </div>
   </div>

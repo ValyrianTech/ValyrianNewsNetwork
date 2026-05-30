@@ -1,8 +1,10 @@
 ---
+import { withBase } from '../utils/urls';
+
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/notifications', label: 'Notifications' },
+  { href: withBase('/'), label: 'Home' },
+  { href: withBase('/about'), label: 'About' },
+  { href: withBase('/notifications'), label: 'Notifications' },
 ];
 
 const today = new Date().toLocaleDateString('en-US', {
@@ -32,7 +34,7 @@ const today = new Date().toLocaleDateString('en-US', {
     
     <!-- Masthead -->
     <div class="py-6 text-center">
-      <a href="/" class="no-underline hover:no-underline inline-block">
+      <a href={withBase('/')} class="no-underline hover:no-underline inline-block">
         <h1 class="font-display text-4xl md:text-5xl font-black text-vnn-ink m-0 leading-none tracking-tight">
           Valyrian News Network
         </h1>

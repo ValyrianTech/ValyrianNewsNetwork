@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../utils/urls';
 ---
 
 <BaseLayout title="Privacy Policy" description="Privacy Policy for Valyrian News Network - how we handle your data.">
@@ -112,12 +113,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <section class="bg-vnn-paper border border-vnn-rule p-6">
         <h2 class="text-xl font-bold text-vnn-ink mb-4">Contact Us</h2>
         <p class="text-vnn-gray">
-          If you have questions about this Privacy Policy, please contact Valyrian Tech BV through our <a href="/about" class="text-vnn-vermillion">About page</a>.
+          If you have questions about this Privacy Policy, please contact Valyrian Tech BV through our <a href={withBase('/about')} class="text-vnn-vermillion">About page</a>.
         </p>
       </section>
       
       <footer class="text-center text-vnn-gray text-sm pt-8 hairline-top">
-        <a href="/" class="text-vnn-vermillion hover:underline">← Back to Home</a>
+        <a href={withBase('/')} class="text-vnn-vermillion hover:underline">← Back to Home</a>
       </footer>
     </div>
   </div>

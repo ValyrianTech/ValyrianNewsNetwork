@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { getCountries } from '../utils/countries';
+import { withBase } from '../utils/urls';
 
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const dayKey = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
@@ -272,7 +273,7 @@ const remainingDateGroups = Object.entries(remainingGroupedByDate);
                 Support on Patreon
               </a>
               <a 
-                href="/about" 
+                href={withBase('/about')} 
                 class="inline-block font-mono text-xs uppercase tracking-widest font-semibold text-vnn-vermillion hover:text-vnn-ink transition-colors border-b-2 border-vnn-vermillion hover:border-vnn-ink pb-1"
               >
                 Learn How VNN Works

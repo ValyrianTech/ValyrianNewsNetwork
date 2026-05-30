@@ -5,7 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://valyrian-news-network.github.io',
+  site: 'https://valyriantech.github.io',
+  base: '/ValyrianNewsNetwork',
   output: 'static',
   vite: {
     plugins: [tailwindcss()]
