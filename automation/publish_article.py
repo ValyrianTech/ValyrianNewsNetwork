@@ -21,6 +21,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -31,6 +32,8 @@ from dotenv import load_dotenv
 # Load .env file from automation directory or repo root
 load_dotenv(Path(__file__).parent / '.env')
 load_dotenv(Path(__file__).parent.parent / '.env')
+
+NOTIFICATION_DELAY_SECONDS = 60
 
 
 def parse_front_matter(content: str) -> tuple[dict, str]:
@@ -514,6 +517,8 @@ def main():
         print(f"   Location: {published_path}")
         
         if not args.no_notify and pushed:
+            print(f"⏳ Waiting {NOTIFICATION_DELAY_SECONDS} seconds before sending push notifications")
+            time.sleep(NOTIFICATION_DELAY_SECONDS)
             send_push_notifications(front_matter)
         elif not args.no_notify:
             print("ℹ️  Skipping push notifications because git push did not run")

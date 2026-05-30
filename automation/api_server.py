@@ -53,6 +53,7 @@ load_dotenv(SCRIPT_DIR / ".env")
 load_dotenv(REPO_ROOT / ".env")
 
 MAX_BODY_BYTES = 1 * 1024 * 1024  # 1 MiB
+NOTIFICATION_DELAY_SECONDS = 60
 
 logger = logging.getLogger("vnn.api")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -197,6 +198,8 @@ async def publish(req: PublishRequest) -> PublishResponse:
             req.notify, req.dry_run, pushed, front_matter.get('tags'),
         )
         if req.notify and not req.dry_run and pushed:
+            logger.info("Waiting %s seconds before sending push notifications", NOTIFICATION_DELAY_SECONDS)
+            await asyncio.sleep(NOTIFICATION_DELAY_SECONDS)
             logger.info("Calling send_push_notifications for slug=%s", front_matter.get('slug'))
             try:
                 await asyncio.to_thread(send_push_notifications, front_matter)
