@@ -46,7 +46,7 @@ self.addEventListener('notificationclick', (event) => {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       // Check if there's already a window open
       for (const client of clientList) {
-        if (client.url.includes('valyrian-news-network.github.io') && 'focus' in client) {
+        if (client.url.includes('valyriantech.github.io/ValyrianNewsNetwork') && 'focus' in client) {
           client.navigate(url);
           return client.focus();
         }
