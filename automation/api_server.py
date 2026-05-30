@@ -37,6 +37,7 @@ from pydantic import BaseModel, Field
 from publish_article import (
     DuplicateSlugError,
     FrontMatterValidationError,
+    GitPublishError,
     parse_front_matter,
     publish_article_content,
     send_push_notifications,
@@ -101,6 +102,7 @@ class PublishResponse(BaseModel):
     slug: str
     title: str
     committed: bool
+    pushed: bool
     notified: bool
     dry_run: bool
 
@@ -152,7 +154,7 @@ async def publish(req: PublishRequest) -> PublishResponse:
         try:
             # Run the (synchronous, disk + git touching) publish in a thread
             # so the event loop stays responsive.
-            dest_path, front_matter, _body = await asyncio.to_thread(
+            dest_path, front_matter, _body, committed, pushed = await asyncio.to_thread(
                 publish_article_content,
                 req.markdown,
                 DEST_DIR,
@@ -179,13 +181,22 @@ async def publish(req: PublishRequest) -> PublishResponse:
         except ValueError as e:
             logger.warning("Bad request: %s", e)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        except GitPublishError as e:
+            logger.error("Git publish failed during %s: %s", e.step, e.detail)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "error": str(e),
+                    "step": e.step,
+                },
+            )
 
         notified = False
         logger.info(
-            "Notify branch: notify=%s dry_run=%s tags=%s",
-            req.notify, req.dry_run, front_matter.get('tags'),
+            "Notify branch: notify=%s dry_run=%s pushed=%s tags=%s",
+            req.notify, req.dry_run, pushed, front_matter.get('tags'),
         )
-        if req.notify and not req.dry_run:
+        if req.notify and not req.dry_run and pushed:
             logger.info("Calling send_push_notifications for slug=%s", front_matter.get('slug'))
             try:
                 await asyncio.to_thread(send_push_notifications, front_matter)
@@ -194,7 +205,10 @@ async def publish(req: PublishRequest) -> PublishResponse:
             except Exception as e:  # noqa: BLE001 - notifications are best-effort
                 logger.warning("Push notifications failed: %s", e)
         else:
-            logger.info("Skipping push notifications (notify=%s, dry_run=%s)", req.notify, req.dry_run)
+            logger.info(
+                "Skipping push notifications (notify=%s, dry_run=%s, pushed=%s)",
+                req.notify, req.dry_run, pushed,
+            )
 
     try:
         relative_path = str(dest_path.relative_to(REPO_ROOT))
@@ -206,7 +220,8 @@ async def publish(req: PublishRequest) -> PublishResponse:
         relative_path=relative_path,
         slug=front_matter["slug"],
         title=front_matter["title"],
-        committed=bool(req.commit and not req.dry_run),
+        committed=committed,
+        pushed=pushed,
         notified=notified,
         dry_run=req.dry_run,
     )

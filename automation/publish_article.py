@@ -135,13 +135,20 @@ class FrontMatterValidationError(ValueError):
         self.errors = errors
 
 
+class GitPublishError(RuntimeError):
+    def __init__(self, step: str, detail: str):
+        super().__init__(f"Git {step} failed: {detail}")
+        self.step = step
+        self.detail = detail
+
+
 def publish_article_content(
     markdown: str,
     dest_dir: Path,
     commit: bool = False,
     repo_root: Path | None = None,
     dry_run: bool = False,
-) -> tuple[Path, dict, str]:
+) -> tuple[Path, dict, str, bool, bool]:
     """
     Publish an article (given its full markdown content) to the content directory.
 
@@ -154,7 +161,7 @@ def publish_article_content(
             do not write to disk or touch git.
 
     Returns:
-        Tuple of (destination path, parsed front matter, body).
+        Tuple of (destination path, parsed front matter, body, committed, pushed).
     """
     front_matter, body = parse_front_matter(markdown)
 
@@ -194,7 +201,7 @@ def publish_article_content(
 
     if dry_run:
         print(f"🧪 Dry run — would publish to: {dest_path}")
-        return dest_path, front_matter, body
+        return dest_path, front_matter, body, False, False
 
     full_dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -205,6 +212,9 @@ def publish_article_content(
 
     dest_path.write_text(new_content, encoding='utf-8')
     print(f"✅ Article published to: {dest_path}")
+
+    committed = False
+    pushed = False
 
     if commit and repo_root:
         print("📦 Committing to git...")
@@ -223,11 +233,24 @@ def publish_article_content(
                 check=True,
                 capture_output=True
             )
+            committed = True
             print(f"✅ Committed: {commit_msg}")
-        except subprocess.CalledProcessError as e:
-            print(f"⚠️  Git commit failed: {e.stderr.decode() if e.stderr else str(e)}")
 
-    return dest_path, front_matter, body
+            print("🚀 Pushing to git remote...")
+            subprocess.run(
+                ['git', 'push'],
+                cwd=repo_root,
+                check=True,
+                capture_output=True
+            )
+            pushed = True
+            print("✅ Pushed to git remote")
+        except subprocess.CalledProcessError as e:
+            detail = e.stderr.decode().strip() if e.stderr else str(e)
+            print(f"❌ Git publish failed: {detail}")
+            raise GitPublishError('publish', detail) from e
+
+    return dest_path, front_matter, body, committed, pushed
 
 
 def publish_article(
@@ -235,18 +258,18 @@ def publish_article(
     dest_dir: Path,
     commit: bool = False,
     repo_root: Path | None = None
-) -> Path:
+) -> tuple[Path, dict, bool, bool]:
     """Read an article from disk and publish it. Thin wrapper around
     ``publish_article_content`` for the CLI."""
     print(f"📄 Reading article from: {source_path}")
     content = source_path.read_text(encoding='utf-8')
-    dest_path, _, _ = publish_article_content(
+    dest_path, front_matter, _, committed, pushed = publish_article_content(
         markdown=content,
         dest_dir=dest_dir,
         commit=commit,
         repo_root=repo_root,
     )
-    return dest_path
+    return dest_path, front_matter, committed, pushed
 
 
 def extract_countries(tags: list[str]) -> list[str]:
@@ -481,7 +504,7 @@ def main():
         dest_dir = repo_root / 'src' / 'content' / 'posts'
     
     try:
-        published_path = publish_article(
+        published_path, front_matter, _, pushed = publish_article(
             source_path=args.article_path,
             dest_dir=dest_dir,
             commit=not args.no_commit,
@@ -490,11 +513,10 @@ def main():
         print(f"\n🎉 Successfully published article!")
         print(f"   Location: {published_path}")
         
-        # Send push notifications
-        if not args.no_notify:
-            content = args.article_path.read_text(encoding='utf-8')
-            front_matter, _ = parse_front_matter(content)
+        if not args.no_notify and pushed:
             send_push_notifications(front_matter)
+        elif not args.no_notify:
+            print("ℹ️  Skipping push notifications because git push did not run")
     except Exception as e:
         print(f"\n❌ Failed to publish article: {e}")
         sys.exit(1)
