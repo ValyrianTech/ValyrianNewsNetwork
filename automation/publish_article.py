@@ -416,7 +416,7 @@ def send_push_notifications(front_matter: dict) -> None:
     payload = {
         'title': front_matter['title'],
         'description': front_matter['meta_description'],
-        'url': f"https://valyriantech.github.io/ValyrianNewsNetwork/posts/{date_path}/{front_matter['slug']}",
+        'url': f"https://vnn.valyrian.tech/posts/{date_path}/{front_matter['slug']}",
         'countries': countries,
     }
     print(f"🔔 POST {worker_url}/send payload={payload}")
