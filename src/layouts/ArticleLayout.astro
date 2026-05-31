@@ -36,6 +36,14 @@ const formattedDate = date.toLocaleDateString('en-US', {
 const articleUrl = new URL(getPostUrl(slug, date), Astro.site).toString();
 const encodedArticleUrl = encodeURIComponent(articleUrl);
 const encodedTitle = encodeURIComponent(title);
+const correctionIssueTitle = encodeURIComponent(`Correction request: ${title}`);
+const correctionIssueBody = encodeURIComponent(`Article: ${title}
+URL: ${articleUrl}
+Published: ${formattedDate}
+
+Please describe the suspected error and, if possible, include a source or correction:
+`);
+const correctionIssueUrl = `https://github.com/ValyrianTech/ValyrianNewsNetwork/issues/new?title=${correctionIssueTitle}&body=${correctionIssueBody}`;
 ---
 
 <BaseLayout title={title} description={meta_description}>
@@ -94,6 +102,12 @@ const encodedTitle = encodeURIComponent(title);
           <a href={`https://www.reddit.com/submit?url=${encodedArticleUrl}&title=${encodedTitle}`} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">Reddit</a>
           <a href={`mailto:?subject=${encodedTitle}&body=${encodedArticleUrl}`} class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">Email</a>
         </div>
+      </div>
+
+      <div class="mb-8 bg-vnn-paper border border-vnn-rule p-4 text-sm text-vnn-gray">
+        <p class="m-0">
+          Spotted an error? <a href={correctionIssueUrl} target="_blank" rel="noopener noreferrer" class="text-vnn-vermillion no-underline hover:underline">Report a correction on GitHub</a>.
+        </p>
       </div>
 
       {tags.length > 0 && (
