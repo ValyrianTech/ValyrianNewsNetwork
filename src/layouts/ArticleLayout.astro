@@ -1,6 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import { withBase } from '../utils/urls';
+import { getPostUrl, withBase } from '../utils/urls';
 
 interface Props {
   title: string;
@@ -8,6 +8,7 @@ interface Props {
   categories: string[];
   tags: string[];
   meta_description: string;
+  slug: string;
   read_time_minutes: number;
   featured_image?: string;
   featured_image_caption?: string;
@@ -19,6 +20,7 @@ const {
   categories, 
   tags, 
   meta_description, 
+  slug,
   read_time_minutes,
   featured_image,
   featured_image_caption
@@ -30,6 +32,10 @@ const formattedDate = date.toLocaleDateString('en-US', {
   day: 'numeric',
   timeZone: 'UTC'
 });
+
+const articleUrl = new URL(getPostUrl(slug, date), Astro.site).toString();
+const encodedArticleUrl = encodeURIComponent(articleUrl);
+const encodedTitle = encodeURIComponent(title);
 ---
 
 <BaseLayout title={title} description={meta_description}>
@@ -79,6 +85,17 @@ const formattedDate = date.toLocaleDateString('en-US', {
     </div>
     
     <footer class="mt-14 pt-10 hairline-top">
+      <div class="mb-8">
+        <h4 class="font-mono text-xs uppercase tracking-[0.15em] text-vnn-muted mb-4">Share this article</h4>
+        <div class="flex flex-wrap gap-2">
+          <a href={`https://twitter.com/intent/tweet?url=${encodedArticleUrl}&text=${encodedTitle}`} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">X</a>
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedArticleUrl}`} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">Facebook</a>
+          <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedArticleUrl}`} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">LinkedIn</a>
+          <a href={`https://www.reddit.com/submit?url=${encodedArticleUrl}&title=${encodedTitle}`} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">Reddit</a>
+          <a href={`mailto:?subject=${encodedTitle}&body=${encodedArticleUrl}`} class="px-3 py-1.5 bg-vnn-light text-vnn-gray text-xs font-mono no-underline hover:bg-vnn-rule hover:text-vnn-ink transition-colors">Email</a>
+        </div>
+      </div>
+
       {tags.length > 0 && (
         <div class="mb-8">
           <h4 class="font-mono text-xs uppercase tracking-[0.15em] text-vnn-muted mb-4">Tags</h4>
