@@ -26,13 +26,13 @@ The historic Belgian city of Ghent has emerged as one of the world's most surpri
 
 According to the [RTBF](https://www.rtbf.be/article/gand-la-surprise-belge-de-la-tech-europeenne-et-mondiale-11733601), Dealroom analyzed 325 cities across 77 countries to identify "Density Leaders" — cities ranked by innovation capacity relative to population size. Ghent now sits behind only Cambridge (UK), London, and Stockholm in the European rankings, a remarkable feat for a city of just 300,000 inhabitants.
 
-## A Tech Ecosystem Worth \u20ac61 Billion
+## A Tech Ecosystem Worth €61 Billion
 
-Ghent's technology sector is now valued at over **\u20ac61 billion**, representing a staggering **68% of all Flanders' tech value**, according to [The Brussels Times](https://www.brusselstimes.com/2158454/ghent-in-top-10-hottest-tech-cities-worldwide-study). The city is home to **four unicorns** — privately held startups valued at over $1 billion — accounting for half of all Belgian unicorns: Deliverect, team.blue, Lighthouse, and Aikido Security.
+Ghent's technology sector is now valued at over **€61 billion**, representing a staggering **68% of all Flanders' tech value**, according to [The Brussels Times](https://www.brusselstimes.com/2158454/ghent-in-top-10-hottest-tech-cities-worldwide-study). The city is home to **four unicorns** — privately held startups valued at over $1 billion — accounting for half of all Belgian unicorns: Deliverect, team.blue, Lighthouse, and Aikido Security.
 
-The value of Ghent's startups and scale-ups has surged from just \u20ac1 billion to \u20ac50 billion over the past decade, Dealroom data shows. The city also hosts **108 AI startups**, more than any other Belgian city, according to figures from Ghent University (UGent) and the Planning Bureau.
+The value of Ghent's startups and scale-ups has surged from just €1 billion to €50 billion over the past decade, Dealroom data shows. The city also hosts **108 AI startups**, more than any other Belgian city, according to figures from Ghent University (UGent) and the Planning Bureau.
 
-Adding to its biotech credentials, Ghent-based Argenx — a biopharmaceutical company focused on autoimmune disease therapies — is valued at approximately **\u20ac41 billion**, making it the highest-valued biotech company in Europe, as reported by [Euronews](https://www.euronews.com/my-europe/2026/05/28/small-but-mighty-the-tiny-tech-hubs-driving-europe-up-global-tech-rankings).
+Adding to its biotech credentials, Ghent-based Argenx — a biopharmaceutical company focused on autoimmune disease therapies — is valued at approximately **€41 billion**, making it the highest-valued biotech company in Europe, as reported by [Euronews](https://www.euronews.com/my-europe/2026/05/28/small-but-mighty-the-tiny-tech-hubs-driving-europe-up-global-tech-rankings).
 
 ## The Three Drivers of Success
 
@@ -62,7 +62,7 @@ Veroniek Collewaert, Professor of Entrepreneurship at Vlerick Business School, a
 
 ## Europe's Broader Tech Renaissance
 
-Ghent's rise is part of a broader European trend. Europe now places **45 cities** in the global top 100 "Density Leaders," compared to 40 for North America. London reclaimed its position as Europe's leading tech ecosystem (4th globally), overtaking Paris, driven by record AI investment of \u20ac6 billion in 2025.
+Ghent's rise is part of a broader European trend. Europe now places **45 cities** in the global top 100 "Density Leaders," compared to 40 for North America. London reclaimed its position as Europe's leading tech ecosystem (4th globally), overtaking Paris, driven by record AI investment of €6 billion in 2025.
 
 AI now represents nearly **30% of venture capital investment in Europe**, according to Dealroom. Meanwhile, rising stars including Zagreb, Athens, Sofia, Prague, and Vilnius signal that Central and Eastern Europe is emerging as a new frontier for tech innovation.
 

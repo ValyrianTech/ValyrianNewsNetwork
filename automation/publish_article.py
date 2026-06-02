@@ -174,6 +174,7 @@ def publish_article_content(
     Returns:
         Tuple of (destination path, parsed front matter, body, committed, pushed).
     """
+    markdown = decode_unicode_escapes(markdown)
     front_matter, body = parse_front_matter(markdown)
     body = decode_unicode_escapes(body)
 
@@ -221,6 +222,7 @@ def publish_article_content(
     new_content += yaml.dump(front_matter, default_flow_style=False, allow_unicode=True, sort_keys=False)
     new_content += "---\n"
     new_content += body
+    new_content = decode_unicode_escapes(new_content)
 
     dest_path.write_text(new_content, encoding='utf-8')
     print(f"✅ Article published to: {dest_path}")

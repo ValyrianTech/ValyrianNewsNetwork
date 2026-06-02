@@ -22,13 +22,13 @@ draft: false
 ---
 # Fuel Prices Rise Again in Belgium Amid Iran Conflict
 
-Belgian motorists face another increase at the pump as the Federal Public Service for Economy (FOD Economie) announced new maximum fuel prices effective June 3, 2026. Petrol 95 (E10) rises to \u20ac1.874 per liter, while diesel (B7) climbs to \u20ac2.08 per liter, adding to the cost-of-living pressures already weighing on Belgian consumers amid the ongoing US-Iran conflict.
+Belgian motorists face another increase at the pump as the Federal Public Service for Economy (FOD Economie) announced new maximum fuel prices effective June 3, 2026. Petrol 95 (E10) rises to €1.874 per liter, while diesel (B7) climbs to €2.08 per liter, adding to the cost-of-living pressures already weighing on Belgian consumers amid the ongoing US-Iran conflict.
 
 ## New Price Increases
 
-According to the [FOD Economie](https://economie.fgov.be/nl/themas/energie/energieprijzen/maximumprijzen/officieel-tarief-van-de), the latest adjustments under Tariff No. 2026/104 see petrol 95 (E10) rise by 1.8 cents to \u20ac1.874 per liter, petrol 98 (E5) increase by 1.5 cents to \u20ac1.953, and diesel (B7) jump by 4.2 cents to \u20ac2.08. The price changes result from quarterly indexation of ASEVA strategic oil reserve contributions, semi-annual adjustments to distribution margins, and fluctuations in international oil and biocomponent quotations.
+According to the [FOD Economie](https://economie.fgov.be/nl/themas/energie/energieprijzen/maximumprijzen/officieel-tarief-van-de), the latest adjustments under Tariff No. 2026/104 see petrol 95 (E10) rise by 1.8 cents to €1.874 per liter, petrol 98 (E5) increase by 1.5 cents to €1.953, and diesel (B7) jump by 4.2 cents to €2.08. The price changes result from quarterly indexation of ASEVA strategic oil reserve contributions, semi-annual adjustments to distribution margins, and fluctuations in international oil and biocomponent quotations.
 
-These increases come just days after a significant drop on May 28-29, when petrol 95 fell 11.8 cents to \u20ac1.856 and diesel dropped 10.3 cents to \u20ac2.038, following hopes of a US-Iran peace deal. The yo-yo effect illustrates the extreme volatility gripping energy markets.
+These increases come just days after a significant drop on May 28-29, when petrol 95 fell 11.8 cents to €1.856 and diesel dropped 10.3 cents to €2.038, following hopes of a US-Iran peace deal. The yo-yo effect illustrates the extreme volatility gripping energy markets.
 
 ## Geopolitical Drivers
 
@@ -38,11 +38,11 @@ The Strait of Hormuz, a narrow waterway between Iran and Oman, handles approxima
 
 ## Historical Context
 
-Diesel reached an all-time record of \u20ac2.489 per liter in early April 2026, while petrol 95 last exceeded the \u20ac2.00 mark on May 19-20, reaching \u20ac2.015 for the first time since July 2022. The current diesel price of \u20ac2.08, while below that record, remains painfully high for consumers and businesses alike.
+Diesel reached an all-time record of €2.489 per liter in early April 2026, while petrol 95 last exceeded the €2.00 mark on May 19-20, reaching €2.015 for the first time since July 2022. The current diesel price of €2.08, while below that record, remains painfully high for consumers and businesses alike.
 
 ## Broader Economic Impact
 
-The fuel price increases are unfolding against a backdrop of broader energy cost pressures. European gas prices have risen approximately 50 percent since the conflict began, hovering around \u20ac47 per megawatt-hour. Electricity prices have also spiked, with peaks above \u20ac445 per megawatt-hour on May 27 driven by air conditioning demand.
+The fuel price increases are unfolding against a backdrop of broader energy cost pressures. European gas prices have risen approximately 50 percent since the conflict began, hovering around €47 per megawatt-hour. Electricity prices have also spiked, with peaks above €445 per megawatt-hour on May 27 driven by air conditioning demand.
 
 Belgium's vulnerability to these shocks is amplified by its role as a major energy transit hub. As [Flows.be](https://www.flows.be/scheepvaart/2026/03/oorlog-midden-oosten-afsluiten-straat-van-hormuz-treft-belgie-hard/) notes, Zeebrugge serves as a critical gateway for LNG imports, and the country hosts significant energy-intensive industry. The [VRT NWS](https://www.vrt.be/vrtnws/nl/2026/03/20/belgie-mee-de-straat-van-hormuz-beveiligen-stapt-ons-land-dan/) has reported on Belgian government deliberations over potential naval involvement in securing the strait, underscoring the strategic stakes for the country.
 
